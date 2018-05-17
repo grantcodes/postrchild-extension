@@ -87,7 +87,12 @@ class PostCreator extends React.Component {
       .create(mf2)
       .then(url => {
         this.setState({ open: false, titleEditor: null, contentEditor: null });
-        window.location.href = url;
+        if (typeof url == "string") {
+          // Sometimes chrome returns a string on success?
+          window.location.href = url;
+        } else {
+          window.location.reload();
+        }
       })
       .catch(err => {
         console.log(err);
