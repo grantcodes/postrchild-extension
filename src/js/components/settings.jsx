@@ -77,15 +77,6 @@ class Settings extends Component {
               &lt;div&gt; element.
             </Small>
           </TabPane>
-
-          <TabPane label="Bookmarks">
-            <Small>Not working yet. Come back later</Small>
-            <Label mb={3}>
-              <Switch mr={3} onChange={e => console.log(e)} />
-              Auto-post new bookmarks
-            </Label>
-            <Button mb={3}>Sync Bookmarks</Button>
-          </TabPane>
         </Tabs>
       </form>
     );
