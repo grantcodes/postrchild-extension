@@ -15,6 +15,9 @@ class PopupTabs extends Component {
   }
 
   render() {
+    let tabs = Array.isArray(this.props.children)
+      ? this.props.children
+      : [this.props.children];
     return (
       <Fragment>
         <Tabs
@@ -23,7 +26,7 @@ class PopupTabs extends Component {
             justifyContent: "space-around"
           }}
         >
-          {this.props.children.map((tab, i) => {
+          {tabs.map((tab, i) => {
             let tabProps = {
               key: i,
               onClick: this.handleClick(i)
@@ -35,7 +38,7 @@ class PopupTabs extends Component {
           })}
         </Tabs>
 
-        <Box p={3}>{this.props.children[this.state.tab].props.children}</Box>
+        <Box p={3}>{tabs[this.state.tab]}</Box>
       </Fragment>
     );
   }
