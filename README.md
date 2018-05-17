@@ -30,10 +30,12 @@ It should have a `h` tag with a `p-name` class and an empty element with a class
 
 For example I use something like this for my own site:
 
-  <article class="h-entry post card">
-    <header>
-      <h1 class="p-name post__title"></h1>
-    </header>
-    <div class="e-content"></div>
-    <footer class=" post__footer">Being written now by Grant Richmond</footer>
-  </article>
+```
+<article class="h-entry post card">
+  <header>
+    <h1 class="p-name post__title"></h1>
+  </header>
+  <div class="e-content"></div>
+  <footer class=" post__footer">Being written now by Grant Richmond</footer>
+</article>
+```
