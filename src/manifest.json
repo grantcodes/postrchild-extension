@@ -8,6 +8,10 @@
     "persistent": false,
     "page": "background.html"
   },
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon-34.png"
+  },
   "content_scripts": [
     {
       "matches": ["https://*/*", "http://*/*"],
