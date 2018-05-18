@@ -21,11 +21,18 @@ class Settings extends Component {
       });
     });
 
+    this.handleLogin = this.handleLogin.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.renderBasicItem = this.renderBasicItem.bind(this);
   }
 
   componentDidMount() {}
+
+  handleLogin() {
+    window
+      .open(browser.extension.getURL("auth.html?start=true"), "_blank")
+      .focus();
+  }
 
   handleChange(name) {
     return e => {
@@ -57,8 +64,20 @@ class Settings extends Component {
         <Tabs>
           <TabPane label="Micropub">
             {this.renderBasicItem("micropubMe", "Domain")}
-            {this.renderBasicItem("micropubEndpoint", "Micropub endpoint")}
-            {this.renderBasicItem("micropubToken", "Micropub token")}
+            {this.state.micropubToken ? (
+              <Fragment>
+                {this.renderBasicItem("micropubEndpoint", "Micropub endpoint")}
+                {this.renderBasicItem("micropubToken", "Micropub token")}
+              </Fragment>
+            ) : (
+              <Button
+                disabled={!this.state.micropubMe}
+                onClick={this.handleLogin}
+                mb={3}
+              >
+                Login
+              </Button>
+            )}
 
             <Label htmlFor={"newPostTemplate"}>New Post Template</Label>
             <Textarea

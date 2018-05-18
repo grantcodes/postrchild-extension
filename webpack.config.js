@@ -35,6 +35,7 @@ var options = {
     popup: path.join(__dirname, "src", "js", "popup.js"),
     onpage: path.join(__dirname, "src", "js", "onpage.js"),
     options: path.join(__dirname, "src", "js", "options.js"),
+    auth: path.join(__dirname, "src", "js", "auth.js"),
     background: path.join(__dirname, "src", "js", "background.js")
   },
   output: {
@@ -126,6 +127,11 @@ var options = {
       template: path.join(__dirname, "src", "options.html"),
       filename: "options.html",
       chunks: ["options"]
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, "src", "auth.html"),
+      filename: "auth.html",
+      chunks: ["auth"]
     }),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, "src", "background.html"),

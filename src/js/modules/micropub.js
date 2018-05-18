@@ -10,6 +10,7 @@ const micropub = new Micropub({
 browser.storage.local.get().then(store => {
   micropub.options.me = store.setting_micropubMe;
   micropub.options.token = store.setting_micropubToken;
+  micropub.options.tokenEndpoint = store.setting_tokenEndpoint;
   micropub.options.micropubEndpoint = store.setting_micropubEndpoint;
 });
 
