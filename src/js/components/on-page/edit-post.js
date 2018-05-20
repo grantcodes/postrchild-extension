@@ -4,6 +4,7 @@ import Popout from "./popout";
 import Mf2Editor from "../mf2-editor";
 import MediumEditor from "medium-editor";
 import micropub from "../../modules/micropub";
+import * as templateUtils from "../../modules/template-utils";
 
 class PostEditor extends React.Component {
   constructor(props) {
@@ -15,7 +16,8 @@ class PostEditor extends React.Component {
       contentEditor: false,
       mf2: {
         properties: {}
-      }
+      },
+      originalProperties: {}
     };
     this.loadEditor = this.loadEditor.bind(this);
     this.handleEdit = this.handleEdit.bind(this);
@@ -30,11 +32,18 @@ class PostEditor extends React.Component {
   }
 
   handleSubmit() {
+    let mf2 = this.state.mf2;
     let titleEditor = this.state.titleEditor;
     let contentEditor = this.state.contentEditor;
 
     const title = titleEditor ? titleEditor.origElements.innerText : null; // This method makes sure we get a string
     const content = contentEditor ? contentEditor.getContent() : null;
+    if (title) {
+      mf2.properties.name = [title];
+    }
+    if (content) {
+      mf2.properties.content = [content];
+    }
 
     if (titleEditor) {
       titleEditor.destroy();
@@ -45,18 +54,19 @@ class PostEditor extends React.Component {
       contentEditor = null;
     }
 
-    if (content || title) {
-      let update = {
-        replace: this.state.mf2.properties
-      };
+    let update = {
+      replace: {}
+    };
 
-      if (title) {
-        update.replace.name = [title];
+    Object.keys(this.state.mf2.properties).forEach(key => {
+      const value = this.state.mf2.properties[key];
+      const ogValue = this.state.originalProperties[key];
+      if (value && value[0] && (!ogValue || !ogValue[0] || ogValue != value)) {
+        update.replace[key] = value;
       }
-      if (content) {
-        update.replace.content = [content];
-      }
+    });
 
+    if (Object.keys(update.replace).length) {
       micropub
         .update(window.location.href, update)
         .then(res => {
@@ -76,16 +86,15 @@ class PostEditor extends React.Component {
           });
           alert("Error updating post: " + err.message);
         });
+    } else {
+      alert("Nothing appears to be updated");
     }
   }
 
   loadEditor() {
     const postEl = this.props.post;
-    let titleEl = postEl.querySelector(".p-name");
-    if (titleEl && titleEl.classList.contains("e-content")) {
-      titleEl = null;
-    }
-    const contentEl = postEl.querySelector(".e-content");
+    let contentEl = templateUtils.getContentEl(postEl);
+    let titleEl = templateUtils.getTitleEl(postEl);
     let titleEditor = this.state.titleEditor;
     let contentEditor = this.state.contentEditor;
     if (!contentEl) {
@@ -95,19 +104,16 @@ class PostEditor extends React.Component {
       .querySource(window.location.href)
       .then(post => {
         if (post && post.properties) {
-          this.setState({ mf2: post });
+          this.setState({ mf2: post, originalProperties: post.properties });
         }
         if (
-          titleEl &&
           post.properties &&
           post.properties.name &&
           post.properties.name[0]
         ) {
           titleEl.innerText = post.properties.name[0];
-          titleEditor = new MediumEditor(titleEl, { toolbar: false });
         }
         if (
-          contentEl &&
           post.properties &&
           post.properties.content &&
           post.properties.content[0]
@@ -118,14 +124,27 @@ class PostEditor extends React.Component {
           } else if (typeof content == "string") {
             contentEl.innerText = content;
           }
-          contentEditor = new MediumEditor(contentEl);
         }
+        contentEditor = new MediumEditor(contentEl, {
+          placeholder: {
+            text: "Insert post content here"
+          }
+        });
+        titleEditor = new MediumEditor(titleEl, {
+          toolbar: false,
+          placeholder: {
+            text: "Title"
+          }
+        });
         this.setState({
           titleEditor,
           contentEditor
         });
       })
-      .catch(err => console.log("Query error", err));
+      .catch(err => {
+        console.log("Query error", err);
+        alert("Error running query source on your post");
+      });
     // editor.subscribe("editableInput", (event, editable) => {
     // });
   }
@@ -154,7 +173,10 @@ class PostEditor extends React.Component {
                 "summary",
                 "featured"
               ].filter(
-                name => typeof this.state.mf2.properties[name] == "undefined"
+                name =>
+                  name == "content" ||
+                  name == "name" ||
+                  typeof this.state.mf2.properties[name] == "undefined"
               )}
             />
           </Popout>

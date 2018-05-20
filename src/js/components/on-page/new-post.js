@@ -4,6 +4,7 @@ import Popout from "./popout";
 import Mf2Editor from "../mf2-editor";
 import MediumEditor from "medium-editor";
 import micropub from "../../modules/micropub";
+import * as templateUtils from "../../modules/template-utils";
 
 class PostCreator extends React.Component {
   constructor(props) {
@@ -43,24 +44,17 @@ class PostCreator extends React.Component {
     let titleEditor = this.state.titleEditor;
     let contentEditor = this.state.contentEditor;
     const templateEl = this.props.template;
-    let contentEl = templateEl.querySelector(".e-content");
-    let titleEl = templateEl.querySelector(".p-name");
-    if (titleEl && titleEl.classList.contains("e-content")) {
-      titleEl = null;
-    }
+    let contentEl = templateUtils.getContentEl(templateEl);
+    let titleEl = templateUtils.getTitleEl(templateEl);
 
     if (contentEl) {
       contentEl.innerHTML = "";
     } else {
-      contentEl = document.createElement("div");
-      contentEl.className = "e-content";
-      templateEl.appendChild(contentEl);
+      alert("Error getting the content container");
     }
 
-    if (!titleEl) {
-      titleEl = document.createElement("h1");
-      titleEl.className = "p-name";
-      contentEl.parentElement.insertBefore(titleEl, contentEl);
+    if (titleEl) {
+      titleEl.innerHTML = "";
     }
 
     this.props.firstPost.parentElement.insertBefore(
@@ -74,9 +68,9 @@ class PostCreator extends React.Component {
       }
     });
     titleEditor = new MediumEditor(titleEl, {
+      toolbar: false,
       placeholder: {
-        text: "Title",
-        toolbar: false
+        text: "Title"
       }
     });
 

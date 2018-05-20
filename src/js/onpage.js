@@ -5,7 +5,6 @@ import browser from "webextension-polyfill";
 import metadataparser from "page-metadata-parser";
 import Microformats from "microformat-shiv";
 import MediumEditor from "medium-editor";
-import removeText from "./modules/remove-text";
 import micropub from "./modules/micropub";
 
 import React from "react";
