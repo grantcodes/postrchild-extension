@@ -4,6 +4,9 @@ import { Box } from "rebass";
 import Theme from "./theme";
 import Settings from "./settings";
 
+import Popout from "./on-page/popout";
+import Mf2Editor from "./mf2-editor";
+
 class Popup extends Component {
   render() {
     return (

@@ -1,5 +1,7 @@
 import React from "react";
-import { ButtonCircle } from "rebass";
+import { Group, Button } from "rebass";
+import Popout from "./popout";
+import Mf2Editor from "../mf2-editor";
 import MediumEditor from "medium-editor";
 import micropub from "../../modules/micropub";
 
@@ -8,15 +10,34 @@ class PostCreator extends React.Component {
     super(props);
     this.state = {
       open: false,
+      popoutOpen: false,
       titleEditor: false,
-      contentEditor: false
+      contentEditor: false,
+      mf2: {
+        type: "h-entry",
+        properties: {}
+      }
     };
 
     this.handleOpen = this.handleOpen.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleMf2Change = this.handleMf2Change.bind(this);
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    let thing = micropub
+      .query("syndicate-to")
+      .then(res => {
+        if (res["syndicate-to"]) {
+          this.setState({ syndicationProviders: res["syndicate-to"] });
+        }
+      })
+      .catch(err => console.log("Error getting syndication providers", err));
+  }
+
+  handleMf2Change(mf2) {
+    this.setState({ mf2: mf2 });
+  }
 
   handleOpen() {
     let titleEditor = this.state.titleEditor;
@@ -70,10 +91,7 @@ class PostCreator extends React.Component {
     titleEditor.destroy();
     contentEditor.destroy();
 
-    let mf2 = {
-      type: ["h-entry"],
-      properties: {}
-    };
+    let mf2 = this.state.mf2;
 
     if (title) {
       mf2.properties.name = [title];
@@ -103,10 +121,34 @@ class PostCreator extends React.Component {
   render() {
     if (this.state.open) {
       return (
-        <ButtonCircle onClick={this.handleSubmit}>Publish Post</ButtonCircle>
+        <React.Fragment>
+          <Group>
+            <Button onClick={this.handleSubmit}>Publish</Button>
+            <Button onClick={() => this.setState({ popoutOpen: true })}>
+              ⚙
+            </Button>
+          </Group>
+          <Popout open={this.state.popoutOpen}>
+            <Mf2Editor
+              properties={this.state.mf2.properties}
+              hiddenProperties={[
+                "name",
+                "content",
+                "in-reply-to",
+                "like-of",
+                "bookmark-of",
+                "in-reply-to",
+                "summary",
+                "featured"
+              ]}
+              onChange={this.handleMf2Change}
+              syndication={this.state.syndicationProviders}
+            />
+          </Popout>
+        </React.Fragment>
       );
     } else {
-      return <ButtonCircle onClick={this.handleOpen}>Add Post</ButtonCircle>;
+      return <Button onClick={this.handleOpen}>Add Post</Button>;
     }
   }
 }

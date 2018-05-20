@@ -1,5 +1,7 @@
 import React from "react";
-import { ButtonCircle } from "rebass";
+import { Group, Button } from "rebass";
+import Popout from "./popout";
+import Mf2Editor from "../mf2-editor";
 import MediumEditor from "medium-editor";
 import micropub from "../../modules/micropub";
 
@@ -8,8 +10,12 @@ class PostEditor extends React.Component {
     super(props);
     this.state = {
       open: false,
+      popoutOpen: false,
       titleEditor: false,
-      contentEditor: false
+      contentEditor: false,
+      mf2: {
+        properties: {}
+      }
     };
     this.loadEditor = this.loadEditor.bind(this);
     this.handleEdit = this.handleEdit.bind(this);
@@ -41,7 +47,7 @@ class PostEditor extends React.Component {
 
     if (content || title) {
       let update = {
-        replace: {}
+        replace: this.state.mf2.properties
       };
 
       if (title) {
@@ -88,6 +94,9 @@ class PostEditor extends React.Component {
     micropub
       .querySource(window.location.href)
       .then(post => {
+        if (post && post.properties) {
+          this.setState({ mf2: post });
+        }
         if (
           titleEl &&
           post.properties &&
@@ -123,9 +132,36 @@ class PostEditor extends React.Component {
 
   render() {
     if (this.state.open) {
-      return <ButtonCircle onClick={this.handleSubmit}>Save Post</ButtonCircle>;
+      return (
+        <React.Fragment>
+          <Group>
+            <Button onClick={this.handleSubmit}>Save Post</Button>
+            <Button onClick={() => this.setState({ popoutOpen: true })}>
+              ⚙
+            </Button>
+          </Group>
+          <Popout open={this.state.popoutOpen}>
+            <Mf2Editor
+              onChange={mf2 => this.setState({ mf2 })}
+              properties={this.state.mf2.properties}
+              hiddenProperties={[
+                "name",
+                "content",
+                "in-reply-to",
+                "like-of",
+                "bookmark-of",
+                "in-reply-to",
+                "summary",
+                "featured"
+              ].filter(
+                name => typeof this.state.mf2.properties[name] == "undefined"
+              )}
+            />
+          </Popout>
+        </React.Fragment>
+      );
     } else {
-      return <ButtonCircle onClick={this.handleEdit}>Edit Post</ButtonCircle>;
+      return <Button onClick={this.handleEdit}>Edit Post</Button>;
     }
   }
 }
