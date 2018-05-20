@@ -21,6 +21,7 @@ class PostEditor extends React.Component {
     };
     this.loadEditor = this.loadEditor.bind(this);
     this.handleEdit = this.handleEdit.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
@@ -29,6 +30,21 @@ class PostEditor extends React.Component {
   handleEdit() {
     this.setState({ open: true });
     this.loadEditor();
+  }
+
+  handleDelete() {
+    if (window.confirm("Are you sure you want to delete this?")) {
+      micropub
+        .delete(window.location.href)
+        .then(res => {
+          // Deleted, lets reload
+          window.location.reload();
+        })
+        .catch(err => {
+          console.log("Error deleting", err);
+          alert("Error deleting post");
+        });
+    }
   }
 
   handleSubmit() {
@@ -75,7 +91,7 @@ class PostEditor extends React.Component {
             titleEditor,
             contentEditor
           });
-          alert("Post updated!");
+          window.location.reload();
         })
         .catch(err => {
           console.log(err);
@@ -158,6 +174,7 @@ class PostEditor extends React.Component {
             <Button onClick={() => this.setState({ popoutOpen: true })}>
               ⚙
             </Button>
+            <Button onClick={this.handleDelete}>🗑</Button>
           </Group>
           <Popout open={this.state.popoutOpen}>
             <Mf2Editor
