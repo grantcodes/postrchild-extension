@@ -2,6 +2,7 @@ import browser from "webextension-polyfill";
 import React, { Component, Fragment } from "react";
 import { Button, Label, Input, Textarea, Switch, Small } from "rebass";
 import Tabs, { TabPane } from "./popup-tabs";
+import micropub from "../modules/micropub";
 
 class Settings extends Component {
   constructor(props) {
@@ -28,10 +29,24 @@ class Settings extends Component {
 
   componentDidMount() {}
 
-  handleLogin() {
-    window
-      .open(browser.extension.getURL("auth.html?start=true"), "_blank")
-      .focus();
+  handleLogin(e) {
+    e.preventDefault();
+    micropub
+      .getAuthUrl()
+      .then(url => {
+        browser.storage.local
+          .set({
+            setting_tokenEndpoint: micropub.options.tokenEndpoint,
+            setting_micropubEndpoint: micropub.options.micropubEndpoint
+          })
+          .then(() => {
+            window.location = url;
+            // browser.tabs.create({ url });
+          });
+      })
+      .catch(err => {
+        console.log(err);
+      });
   }
 
   handleChange(name) {
