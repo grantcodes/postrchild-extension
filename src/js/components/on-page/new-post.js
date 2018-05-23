@@ -1,3 +1,4 @@
+import browser from "webextension-polyfill";
 import React from "react";
 import { Group, Button } from "rebass";
 import Popout from "./popout";
@@ -26,7 +27,18 @@ class PostCreator extends React.Component {
   }
 
   componentDidMount() {
-    let thing = micropub
+    if (!micropub.options.mediaEndpoint) {
+      micropub
+        .query("config")
+        .then(config => {
+          if (config["media-endpoint"]) {
+            micropub.options.mediaEndpoint = config["media-endpoint"];
+          }
+        })
+        .catch(err => console.log("Micropub config error", err));
+    }
+
+    micropub
       .query("syndicate-to")
       .then(res => {
         if (res["syndicate-to"]) {
@@ -55,6 +67,67 @@ class PostCreator extends React.Component {
 
     if (titleEl) {
       titleEl.innerHTML = "";
+    }
+
+    // Photo upload
+    const photoEl = templateEl.querySelector(".u-photo");
+    if (micropub.options.mediaEndpoint && photoEl) {
+      let upload = document.createElement("input");
+      let previews = document.createElement("div");
+      let previewImg = photoEl.getElementsByTagName("img");
+      upload.type = "file";
+      upload.multiple = "multiple";
+      upload.style.display = "block";
+      photoEl.appendChild(upload);
+      photoEl.appendChild(previews);
+      upload.addEventListener("change", e => {
+        previews.innerHTML = "";
+        for (let i = 0; i < upload.files.length; i++) {
+          const file = upload.files[i];
+          if (file.type.startsWith("image/")) {
+            const image = document.createElement("img");
+            if (previewImg && previewImg[0] && previewImg[0].className) {
+              image.className = previewImg[0].className;
+            }
+            image.src = URL.createObjectURL(file);
+            image.style.display = "block";
+            image.style.margin = "0 auto";
+            image.style.opacity = 0.5;
+            image.style.transition = "opacity .5s";
+            image.title = "uploading...";
+
+            previews.appendChild(image);
+
+            let mf2 = this.state.mf2;
+            if (!mf2.properties.photo) {
+              mf2.properties.photo = [];
+            }
+            micropub
+              .postMedia(file)
+              .then(url => {
+                image.style.opacity = 1;
+                image.title = "";
+                image.src = url;
+                mf2.properties.photo.push(url);
+                this.setState({ mf2 });
+              })
+              .catch(err => {
+                browser.runtime
+                  .sendMessage({ action: "getLastLocation" })
+                  .then(res => {
+                    if (res.location) {
+                      const url = res.location;
+                      image.style.opacity = 1;
+                      image.title = "";
+                      image.src = url;
+                      mf2.properties.photo.push(url);
+                      this.setState({ mf2 });
+                    }
+                  });
+              });
+          }
+        }
+      });
     }
 
     this.props.firstPost.parentElement.insertBefore(
