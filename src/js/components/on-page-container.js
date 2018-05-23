@@ -6,7 +6,7 @@ import Theme from "./theme";
 import PostEditor from "./on-page/edit-post";
 import PostCreator from "./on-page/new-post";
 import micropub from "../modules/micropub";
-import removeText from "../modules/remove-text";
+import { sanitizeTemplate } from "../modules/template-utils";
 
 class OnPageContainer extends React.Component {
   constructor(props) {
@@ -34,7 +34,8 @@ class OnPageContainer extends React.Component {
                 tmpTemplate.innerHTML = template.setting_newPostTemplate.trim();
                 template = tmpTemplate;
               } else {
-                template = removeText(hEntries[0]);
+                // Create a template based off the last post.
+                template = sanitizeTemplate(hEntries[0]);
               }
               this.setState({
                 action: "add",

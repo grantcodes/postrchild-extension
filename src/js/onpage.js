@@ -5,14 +5,15 @@ import browser from "webextension-polyfill";
 import metadataparser from "page-metadata-parser";
 import Microformats from "microformat-shiv";
 import MediumEditor from "medium-editor";
-import removeText from "./modules/remove-text";
 import micropub from "./modules/micropub";
 
 import React from "react";
 import { render } from "react-dom";
 import App from "./components/on-page-container";
 
+// Inject editor onto page
 const onPageContainer = document.createElement("div");
+onPageContainer.id = "app-container";
 onPageContainer.style.position = "fixed";
 onPageContainer.style.bottom = "20px";
 onPageContainer.style.right = "20px";
@@ -20,6 +21,17 @@ onPageContainer.style.zIndex = 99999;
 document.body.appendChild(onPageContainer);
 render(<App />, onPageContainer);
 
+// Redirect to extension auth.html page to complete authentication
+if (
+  window.location.href.indexOf(micropub.options.redirectUri) === 0 &&
+  !micropub.options.token
+) {
+  const redirect =
+    browser.extension.getURL("/auth.html") + window.location.search;
+  window.location = redirect;
+}
+
+// Get MF2 data for the current page
 browser.runtime.onMessage.addListener((request, sender) => {
   if (request.action == "getPageMF2") {
     const metadata = metadataparser.getMetadata(

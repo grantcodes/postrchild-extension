@@ -1,12 +1,13 @@
-var webpack = require("webpack"),
-  path = require("path"),
-  fileSystem = require("fs"),
-  env = require("./utils/env"),
-  CleanWebpackPlugin = require("clean-webpack-plugin"),
-  CopyWebpackPlugin = require("copy-webpack-plugin"),
-  HtmlWebpackPlugin = require("html-webpack-plugin"),
-  WriteFilePlugin = require("write-file-webpack-plugin"),
-  pkg = require("./package.json");
+const webpack = require("webpack");
+const path = require("path");
+const fileSystem = require("fs");
+const env = require("./utils/env");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const WriteFilePlugin = require("write-file-webpack-plugin");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+const pkg = require("./package.json");
 
 // load the secrets
 var alias = {};
@@ -35,7 +36,8 @@ var options = {
     popup: path.join(__dirname, "src", "js", "popup.js"),
     onpage: path.join(__dirname, "src", "js", "onpage.js"),
     options: path.join(__dirname, "src", "js", "options.js"),
-    background: path.join(__dirname, "src", "js", "background.js")
+    background: path.join(__dirname, "src", "js", "background.js"),
+    auth: path.join(__dirname, "src", "js", "auth.js")
   },
   output: {
     path: path.join(__dirname, "build"),
@@ -46,31 +48,6 @@ var options = {
       {
         test: /\.css$/,
         use: [{ loader: "style-loader" }, { loader: "css-loader" }]
-      },
-      {
-        test: /\.less$/,
-        use: [
-          {
-            loader: "style-loader"
-          },
-          {
-            loader: "css-loader"
-          },
-          {
-            loader: "less-loader",
-            options: {
-              inlineJavaScript: true,
-              modifyVars: pkg.theme
-            }
-          }
-        ]
-
-        // loader:
-        //   "css?sourceMap&modules&localIdentName=[local]___[hash:base64:5]!!" +
-        //   "postcss!" +
-        //   `less-loader?{"sourceMap":true,"modifyVars":${JSON.stringify(
-        //     pkg.theme
-        //   )}}`
       },
       {
         test: new RegExp(".(" + fileExtensions.join("|") + ")$"),
@@ -95,6 +72,14 @@ var options = {
       .map(extension => "." + extension)
       .concat([".jsx", ".js", ".css"])
   },
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin({
+        cache: false,
+        parallel: false
+      })
+    ]
+  },
   plugins: [
     // clean the build folder
     new CleanWebpackPlugin(["build"]),
@@ -118,17 +103,22 @@ var options = {
       }
     ]),
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, "src", "popup.html"),
+      template: path.join(__dirname, "src", "template.html"),
       filename: "popup.html",
       chunks: ["popup"]
     }),
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, "src", "options.html"),
+      template: path.join(__dirname, "src", "template.html"),
       filename: "options.html",
       chunks: ["options"]
     }),
     new HtmlWebpackPlugin({
-      template: path.join(__dirname, "src", "background.html"),
+      template: path.join(__dirname, "src", "auth.html"),
+      filename: "auth.html",
+      chunks: ["auth"]
+    }),
+    new HtmlWebpackPlugin({
+      template: path.join(__dirname, "src", "template.html"),
       filename: "background.html",
       chunks: ["background"]
     }),

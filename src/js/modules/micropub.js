@@ -2,14 +2,15 @@ import browser from "webextension-polyfill";
 import Micropub from "micropub-helper";
 
 const micropub = new Micropub({
-  clientId: "https://grant.codes",
+  clientId: "https://postrchild.com",
   redirectUri: "https://postrchild.com/auth",
-  state: "This should be grant.codes secret or randomly generated per user"
+  state: "This should be a super secret or randomly generated per user"
 });
 
 browser.storage.local.get().then(store => {
   micropub.options.me = store.setting_micropubMe;
   micropub.options.token = store.setting_micropubToken;
+  micropub.options.tokenEndpoint = store.setting_tokenEndpoint;
   micropub.options.micropubEndpoint = store.setting_micropubEndpoint;
 });
 

@@ -1,6 +1,7 @@
 {
-  "name": "To Be Named Micropub Extension",
+  "name": "PostrChild",
   "author": "grant.codes",
+  "options_page": "options.html",
   "options_ui": {
     "page": "options.html"
   },
@@ -24,12 +25,5 @@
   "manifest_version": 2,
   "content_security_policy":
     "script-src 'self' 'unsafe-eval'; object-src 'self'",
-  "permissions": [
-    "*://grant.codes/*",
-    "<all_urls>",
-    "storage",
-    "tabs",
-    "bookmarks",
-    "notifications"
-  ]
+  "permissions": ["<all_urls>", "storage", "tabs", "bookmarks", "notifications"]
 }

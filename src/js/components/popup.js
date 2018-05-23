@@ -4,7 +4,6 @@ import { Box } from "rebass";
 import Header from "./header";
 import Tabs, { TabPane } from "./popup-tabs";
 import Theme from "./theme";
-import BookmarkForm from "./bookmark-form";
 
 class Popup extends Component {
   render() {
@@ -12,11 +11,6 @@ class Popup extends Component {
       <Theme>
         <Box style={{ minWidth: 256 }} p={0}>
           <Header />
-          <Tabs>
-            <TabPane label="Bookmark">
-              <BookmarkForm />
-            </TabPane>
-          </Tabs>
         </Box>
       </Theme>
     );

@@ -21,11 +21,18 @@ class Settings extends Component {
       });
     });
 
+    this.handleLogin = this.handleLogin.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.renderBasicItem = this.renderBasicItem.bind(this);
   }
 
   componentDidMount() {}
+
+  handleLogin() {
+    window
+      .open(browser.extension.getURL("auth.html?start=true"), "_blank")
+      .focus();
+  }
 
   handleChange(name) {
     return e => {
@@ -57,8 +64,20 @@ class Settings extends Component {
         <Tabs>
           <TabPane label="Micropub">
             {this.renderBasicItem("micropubMe", "Domain")}
-            {this.renderBasicItem("micropubEndpoint", "Micropub endpoint")}
-            {this.renderBasicItem("micropubToken", "Micropub token")}
+            {this.state.micropubToken ? (
+              <Fragment>
+                {this.renderBasicItem("micropubEndpoint", "Micropub endpoint")}
+                {this.renderBasicItem("micropubToken", "Micropub token")}
+              </Fragment>
+            ) : (
+              <Button
+                disabled={!this.state.micropubMe}
+                onClick={this.handleLogin}
+                mb={3}
+              >
+                Login
+              </Button>
+            )}
 
             <Label htmlFor={"newPostTemplate"}>New Post Template</Label>
             <Textarea
@@ -76,15 +95,6 @@ class Settings extends Component {
               work. Note: This will also automatically be wrapped in a plain
               &lt;div&gt; element.
             </Small>
-          </TabPane>
-
-          <TabPane label="Bookmarks">
-            <Small>Not working yet. Come back later</Small>
-            <Label mb={3}>
-              <Switch mr={3} onChange={e => console.log(e)} />
-              Auto-post new bookmarks
-            </Label>
-            <Button mb={3}>Sync Bookmarks</Button>
           </TabPane>
         </Tabs>
       </form>
