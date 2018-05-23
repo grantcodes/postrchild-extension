@@ -21,7 +21,7 @@ const errorNotification = message => {
 const bookmarkToMf2 = bookmark =>
   new Promise((resolve, reject) => {
     bookmarks
-      .get()
+      .getLocal()
       .then(bookmarks => {
         if (bookmark !== Object(bookmark)) {
           bookmark = bookmarks.find(item => item.id == bookmark);

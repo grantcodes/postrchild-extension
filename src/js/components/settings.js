@@ -61,42 +61,42 @@ class Settings extends Component {
   render() {
     return (
       <form>
-        <Tabs>
-          <TabPane label="Micropub">
-            {this.renderBasicItem("micropubMe", "Domain")}
-            {this.state.micropubToken ? (
-              <Fragment>
-                {this.renderBasicItem("micropubEndpoint", "Micropub endpoint")}
-                {this.renderBasicItem("micropubToken", "Micropub token")}
-              </Fragment>
-            ) : (
-              <Button
-                disabled={!this.state.micropubMe}
-                onClick={this.handleLogin}
-                mb={3}
-              >
-                Login
-              </Button>
-            )}
+        {/* <Tabs>
+          <TabPane label="Micropub"> */}
+        {this.renderBasicItem("micropubMe", "Domain")}
+        {this.state.micropubToken ? (
+          <Fragment>
+            {this.renderBasicItem("micropubEndpoint", "Micropub endpoint")}
+            {this.renderBasicItem("micropubToken", "Micropub token")}
+          </Fragment>
+        ) : (
+          <Button
+            disabled={!this.state.micropubMe}
+            onClick={this.handleLogin}
+            mb={3}
+          >
+            Login
+          </Button>
+        )}
 
-            <Label htmlFor={"newPostTemplate"}>New Post Template</Label>
-            <Textarea
-              mb={3}
-              style={{ resize: "vertical" }}
-              rows={10}
-              value={this.state.newPostTemplate}
-              id={"newPostTemplate"}
-              onChange={this.handleChange("newPostTemplate")}
-            />
-            <Small>
-              Here you can write blank html code for how posts are displayed on
-              your site. Make sure to include the classes "p-name" on your title
-              and "e-content" on your content area or the extension will not
-              work. Note: This will also automatically be wrapped in a plain
-              &lt;div&gt; element.
-            </Small>
-          </TabPane>
-        </Tabs>
+        <Label htmlFor={"newPostTemplate"}>New Post Template</Label>
+        <Textarea
+          mb={3}
+          style={{ resize: "vertical" }}
+          rows={10}
+          value={this.state.newPostTemplate}
+          id={"newPostTemplate"}
+          onChange={this.handleChange("newPostTemplate")}
+        />
+        <Small>
+          Here you can write blank html code for how posts are displayed on your
+          site. Make sure to include the classes "p-name" on your title and
+          "e-content" on your content area or the extension will not work. Note:
+          This will also automatically be wrapped in a plain &lt;div&gt;
+          element.
+        </Small>
+        {/* </TabPane>
+        </Tabs> */}
       </form>
     );
   }
