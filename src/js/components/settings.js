@@ -13,6 +13,7 @@ class Settings extends Component {
       micropubToken: "",
       micropubEndpoint: "",
       newPostTemplate: "",
+      bookmarkAutoSync: false,
       bookmarksSyncing: false
     };
     browser.storage.local.get().then(store => {
@@ -20,7 +21,8 @@ class Settings extends Component {
         micropubMe: store.setting_micropubMe,
         micropubToken: store.setting_micropubToken,
         micropubEndpoint: store.setting_micropubEndpoint,
-        newPostTemplate: store.setting_newPostTemplate
+        newPostTemplate: store.setting_newPostTemplate,
+        bookmarkAutoSync: store.setting_bookmarkAutoSync ? true : false
       });
     });
 
@@ -105,8 +107,6 @@ class Settings extends Component {
   render() {
     return (
       <form>
-        {/* <Tabs>
-          <TabPane label="Micropub"> */}
         {this.renderBasicItem("micropubMe", "Domain")}
         {this.state.micropubToken ? (
           <Fragment>
@@ -139,9 +139,22 @@ class Settings extends Component {
           This will also automatically be wrapped in a plain &lt;div&gt;
           element.
         </Small>
-        {/* </TabPane>
-        </Tabs> */}
+
         <Divider />
+        <Label mb={3}>
+          <Switch
+            mr={1}
+            checked={this.state.bookmarkAutoSync}
+            onClick={e => {
+              let update = {
+                setting_bookmarkAutoSync: !this.state.bookmarkAutoSync
+              };
+              browser.storage.local.set(update);
+              this.setState({ bookmarkAutoSync: !this.state.bookmarkAutoSync });
+            }}
+          />{" "}
+          Enable Bookmark Auto Posting
+        </Label>
         <Button
           disabled={this.state.bookmarksSyncing}
           onClick={this.handleSyncBookmarks}

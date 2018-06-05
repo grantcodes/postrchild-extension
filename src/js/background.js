@@ -12,78 +12,97 @@ import Bookmark from "./modules/bookmarks";
 //   }
 // });
 
+const shouldAutoPushBookmarks = () =>
+  new Promise((resolve, reject) => {
+    browser.storage.local.get("setting_bookmarkAutoSync").then(store => {
+      if (store.setting_bookmarkAutoSync) {
+        resolve();
+      } else {
+        reject();
+      }
+    });
+  });
+
 let mf2Bookmarks = {};
 browser.bookmarks.onCreated.addListener((id, bookmark) => {
-  if (bookmark.url && bookmark.title) {
-    bookmark = new Bookmark(bookmark);
-    // New bookmark created. Let's check if it we are syncing the bookmarks or not before pushing it online
-    browser.runtime
-      .sendMessage({ action: "isSyncing" })
-      .then(isSyncing => {
-        if (!isSyncing) {
-          bookmark
-            .createMicropub()
-            .then(url => {
-              mf2Bookmarks[bookmark.browser.id] = url;
-              if (typeof url === "string") {
-                notification(url, "Micropub bookmark created");
-              } else {
-                notification("Micropub bookmark created");
-              }
-            })
-            .catch(err => {
-              console.log("Error creating micropub bookmark", err);
-              notification("Error creating micropub bookmark", "Error");
-            });
-        } else {
-          console.log(
-            "Bookmarks are currently syncing so this should be ignored"
-          );
-        }
-      })
-      .catch(err => {
-        // If there was an error then they probably are not syncing
-        bookmark
-          .createMicropub()
-          .then(url => {
-            mf2Bookmarks[bookmark.browser.id] = url;
-            if (typeof url === "string") {
-              notification(url, "Micropub bookmark created");
+  shouldAutoPushBookmarks()
+    .then(() => {
+      if (bookmark.url && bookmark.title) {
+        bookmark = new Bookmark(bookmark);
+        // New bookmark created. Let's check if it we are syncing the bookmarks or not before pushing it online
+        browser.runtime
+          .sendMessage({ action: "isSyncing" })
+          .then(isSyncing => {
+            if (!isSyncing) {
+              bookmark
+                .createMicropub()
+                .then(url => {
+                  mf2Bookmarks[bookmark.browser.id] = url;
+                  if (typeof url === "string") {
+                    notification(url, "Micropub bookmark created");
+                  } else {
+                    notification("Micropub bookmark created");
+                  }
+                })
+                .catch(err => {
+                  console.log("Error creating micropub bookmark", err);
+                  notification("Error creating micropub bookmark", "Error");
+                });
             } else {
-              notification("Micropub bookmark created");
+              console.log(
+                "Bookmarks are currently syncing so this should be ignored"
+              );
             }
           })
           .catch(err => {
-            console.log("Error creating micropub bookmark", err);
-            notification("Error creating micropub bookmark", "Error");
+            // If there was an error then they probably are not syncing
+            bookmark
+              .createMicropub()
+              .then(url => {
+                // TODO: Really need to figure out why this won't return the actual url in chrome
+                if (typeof url === "string") {
+                  mf2Bookmarks[bookmark.browser.id] = url;
+                  notification(url, "Micropub bookmark created");
+                } else {
+                  notification("Micropub bookmark created");
+                }
+              })
+              .catch(err => {
+                notification("Error creating micropub bookmark", "Error");
+              });
           });
-      });
-  }
+      }
+    })
+    .catch(() => {});
 });
 
 // Need to look for updates as a lot of browsers will update the bookmark when you change folders
 browser.bookmarks.onMoved.addListener((id, bookmark) => {
-  if (mf2Bookmarks[id]) {
-    bookmarks.toMf2(...bookmark).then(mf2 => {
-      const update = {
-        replace: {
-          category: mf2.properties.category
-        }
-      };
-      micropub
-        .update(mf2Bookmarks[id], update)
-        .then(url => {
-          notification(
-            "Successfully updated bookmark post categories",
-            "Moved Bookmark"
-          );
-        })
-        .catch(err => {
-          console.log(err);
-          errorNotification(err.message);
+  shouldAutoPushBookmarks()
+    .then(() => {
+      if (mf2Bookmarks[id]) {
+        bookmarks.toMf2(...bookmark).then(mf2 => {
+          const update = {
+            replace: {
+              category: mf2.properties.category
+            }
+          };
+          micropub
+            .update(mf2Bookmarks[id], update)
+            .then(url => {
+              notification(
+                "Successfully updated bookmark post categories",
+                "Moved Bookmark"
+              );
+            })
+            .catch(err => {
+              console.log(err);
+              errorNotification(err.message);
+            });
         });
-    });
-  }
+      }
+    })
+    .catch(() => {});
 });
 
 // Need to watch for headers from the micropub & media endpoint because they cannot be read by default.
