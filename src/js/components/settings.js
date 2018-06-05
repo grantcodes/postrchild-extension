@@ -1,8 +1,9 @@
 import browser from "webextension-polyfill";
 import React, { Component, Fragment } from "react";
-import { Button, Label, Input, Textarea, Switch, Small } from "rebass";
+import { Button, Label, Input, Textarea, Switch, Small, Divider } from "rebass";
 import Tabs, { TabPane } from "./popup-tabs";
 import micropub from "../modules/micropub";
+import { sync as syncBookmarks } from "../modules/bookmarks";
 
 class Settings extends Component {
   constructor(props) {
@@ -11,7 +12,8 @@ class Settings extends Component {
       micropubMe: "",
       micropubToken: "",
       micropubEndpoint: "",
-      newPostTemplate: ""
+      newPostTemplate: "",
+      bookmarksSyncing: false
     };
     browser.storage.local.get().then(store => {
       this.setState({
@@ -24,10 +26,23 @@ class Settings extends Component {
 
     this.handleLogin = this.handleLogin.bind(this);
     this.handleChange = this.handleChange.bind(this);
+    this.handleSyncBookmarks = this.handleSyncBookmarks.bind(this);
     this.renderBasicItem = this.renderBasicItem.bind(this);
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    browser.runtime.onMessage.addListener((request, sender) => {
+      switch (request.action) {
+        case "isSyncing": {
+          return Promise.resolve(this.state.bookmarksSyncing);
+          break;
+        }
+        default: {
+          break;
+        }
+      }
+    });
+  }
 
   handleLogin(e) {
     e.preventDefault();
@@ -40,12 +55,26 @@ class Settings extends Component {
             setting_micropubEndpoint: micropub.options.micropubEndpoint
           })
           .then(() => {
-            window.location = url;
-            // browser.tabs.create({ url });
+            // window.location = url;
+            browser.tabs.create({ url });
           });
       })
       .catch(err => {
         console.log(err);
+      });
+  }
+
+  handleSyncBookmarks(e) {
+    e.preventDefault();
+    this.setState({ bookmarksSyncing: true });
+    // Do the callback on a timeout to allow the background script time to check if the sync is happening
+    syncBookmarks()
+      .then(() =>
+        setTimeout(() => this.setState({ bookmarksSyncing: false }), 500)
+      )
+      .catch(err => {
+        console.log("Error syncing bookmarks", err);
+        setTimeout(() => this.setState({ bookmarksSyncing: false }), 500);
       });
   }
 
@@ -112,6 +141,23 @@ class Settings extends Component {
         </Small>
         {/* </TabPane>
         </Tabs> */}
+        <Divider />
+        <Button
+          disabled={this.state.bookmarksSyncing}
+          onClick={this.handleSyncBookmarks}
+        >
+          {this.state.bookmarksSyncing ? "Syncing..." : "Sync Bookmarks"}
+        </Button>
+        <br />
+        <Small>
+          This will almost certainly not work fully for you. Full bookmark
+          syncing requires a micropub query api which does not exist yet. My own
+          implementation is just using mongodb query syntax. What should work
+          for you is the automatic creation of micropub bookmark posts on your
+          site. If you hit the sync button it will push all your browser
+          bookmarks as mf2 posts and the extension will automatically create new
+          mf2 bookmark posts when you create a browser bookmark
+        </Small>
       </form>
     );
   }
