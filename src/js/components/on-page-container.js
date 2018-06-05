@@ -6,7 +6,7 @@ import Theme from "./theme";
 import PostEditor from "./on-page/edit-post";
 import PostCreator from "./on-page/new-post";
 import micropub from "../modules/micropub";
-import { sanitizeTemplate } from "../modules/template-utils";
+import { sanitizeTemplate, removeText } from "../modules/template-utils";
 
 class OnPageContainer extends React.Component {
   constructor(props) {

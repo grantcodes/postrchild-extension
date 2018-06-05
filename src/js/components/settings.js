@@ -16,15 +16,18 @@ class Settings extends Component {
       bookmarkAutoSync: false,
       bookmarksSyncing: false
     };
-    browser.storage.local.get().then(store => {
-      this.setState({
-        micropubMe: store.setting_micropubMe,
-        micropubToken: store.setting_micropubToken,
-        micropubEndpoint: store.setting_micropubEndpoint,
-        newPostTemplate: store.setting_newPostTemplate,
-        bookmarkAutoSync: store.setting_bookmarkAutoSync ? true : false
-      });
-    });
+    browser.storage.local
+      .get()
+      .then(store => {
+        this.setState({
+          micropubMe: store.setting_micropubMe,
+          micropubToken: store.setting_micropubToken,
+          micropubEndpoint: store.setting_micropubEndpoint,
+          newPostTemplate: store.setting_newPostTemplate,
+          bookmarkAutoSync: store.setting_bookmarkAutoSync ? true : false
+        });
+      })
+      .catch(err => console.log("Error getting local browser settings", err));
 
     this.handleLogin = this.handleLogin.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -59,7 +62,10 @@ class Settings extends Component {
           .then(() => {
             // window.location = url;
             browser.tabs.create({ url });
-          });
+          })
+          .catch(err =>
+            console.log("Error setting endpoints in browser storage", err)
+          );
       })
       .catch(err => {
         console.log(err);

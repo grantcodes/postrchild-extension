@@ -21,46 +21,50 @@ onPageContainer.style.zIndex = 99999;
 document.body.appendChild(onPageContainer);
 render(<App />, onPageContainer);
 
-// Redirect to extension auth.html page to complete authentication
+// Complete auth if on micropub redirect page
 if (
   window.location.href.indexOf(micropub.options.redirectUri) === 0 &&
   !micropub.options.token
 ) {
-  // const redirect =
-  //   browser.extension.getURL("/auth.html") + window.location.search;
-  // if (redirect) {
-  //   window.location = redirect;
-  // }
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
   const state = params.get("state");
 
-  browser.storage.local.get().then(store => {
-    micropub.options.me = store.setting_micropubMe;
-    micropub.options.tokenEndpoint = store.setting_tokenEndpoint;
-    micropub.options.micropubEndpoint = store.setting_micropubEndpoint;
+  browser.runtime
+    .sendMessage({ action: "getSettings" })
+    .then(store => {
+      micropub.options.me = store.setting_micropubMe;
+      micropub.options.tokenEndpoint = store.setting_tokenEndpoint;
+      micropub.options.micropubEndpoint = store.setting_micropubEndpoint;
 
-    if (code && state && state == micropub.options.state) {
-      micropub
-        .getToken(code)
-        .then(token => {
-          browser.storage.local
-            .set({ setting_micropubToken: token })
-            .then(() => {
-              browser.tabs.getCurrent().then(tab => {
-                if (tab && tab.id) {
-                  browser.tabs.remove(tab.id);
-                }
+      if (code && state && state == micropub.options.state) {
+        micropub
+          .getToken(code)
+          .then(token => {
+            browser.storage.local
+              .set({ setting_micropubToken: token })
+              .then(() => {
+                // TODO: Call to background js to close tab and send notification
+                alert(
+                  "PostrChild Extension all set up. You may close this tab"
+                );
+              })
+              .catch(err => {
+                console.log(
+                  "error setting micropub token in browser storage",
+                  err
+                );
               });
-            });
-        })
-        .catch(err => {
-          console.log(err);
-          alert(err.message);
-          window.close();
-        });
-    }
-  });
+          })
+          .catch(err => {
+            console.log("Error getting micropub token", err);
+            alert(err.message);
+          });
+      }
+    })
+    .catch(err => {
+      console.log("Error getting stored settings from the browser", err);
+    });
 }
 
 // Get MF2 data for the current page

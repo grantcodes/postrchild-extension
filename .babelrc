@@ -7,14 +7,13 @@
         "useBuiltIns": true,
         "shippedProposals": true,
         "targets": {
-          "browsers": ["last 2 versions"]
+          "node": "current"
         }
       }
     ],
     "react"
   ],
   "plugins": [
-    "react-hot-loader/babel",
-    ["import", { "libraryName": "antd", "style": true }]
+    "react-hot-loader/babel"
   ]
 }

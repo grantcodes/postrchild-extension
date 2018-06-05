@@ -74,8 +74,8 @@ class PostEditor extends React.Component {
       replace: {}
     };
 
-    Object.keys(this.state.mf2.properties).forEach(key => {
-      const value = this.state.mf2.properties[key];
+    Object.keys(mf2.properties).forEach(key => {
+      const value = mf2.properties[key];
       const ogValue = this.state.originalProperties[key];
       if (value && value[0] && (!ogValue || !ogValue[0] || ogValue != value)) {
         update.replace[key] = value;
@@ -120,7 +120,10 @@ class PostEditor extends React.Component {
       .querySource(window.location.href)
       .then(post => {
         if (post && post.properties) {
-          this.setState({ mf2: post, originalProperties: post.properties });
+          this.setState({
+            mf2: post,
+            originalProperties: Object.assign({}, post.properties)
+          });
         }
         if (
           post.properties &&

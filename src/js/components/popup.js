@@ -10,7 +10,7 @@ class Popup extends Component {
   render() {
     return (
       <Theme>
-        <Box style={{ minWidth: 256 }} p={0}>
+        <Box style={{ minWidth: 256, maxWidth: 350 }} p={0}>
           <Header />
           <Tabs>
             <TabPane label="Settings">

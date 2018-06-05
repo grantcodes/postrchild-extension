@@ -7,12 +7,17 @@ const micropub = new Micropub({
   state: "This should be a super secret or randomly generated per user"
 });
 
-browser.storage.local.get().then(store => {
-  micropub.options.me = store.setting_micropubMe;
-  micropub.options.token = store.setting_micropubToken;
-  micropub.options.tokenEndpoint = store.setting_tokenEndpoint;
-  micropub.options.micropubEndpoint = store.setting_micropubEndpoint;
-});
+browser.runtime
+  .sendMessage({ action: "getSettings" })
+  .then(store => {
+    micropub.options.me = store.setting_micropubMe;
+    micropub.options.token = store.setting_micropubToken;
+    micropub.options.tokenEndpoint = store.setting_tokenEndpoint;
+    micropub.options.micropubEndpoint = store.setting_micropubEndpoint;
+  })
+  .catch(err =>
+    console.log("Error getting micropub options from browser", err)
+  );
 
 browser.storage.onChanged.addListener((changes, area) => {
   if (area == "local") {

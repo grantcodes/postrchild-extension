@@ -14,13 +14,19 @@ import Bookmark from "./modules/bookmarks";
 
 const shouldAutoPushBookmarks = () =>
   new Promise((resolve, reject) => {
-    browser.storage.local.get("setting_bookmarkAutoSync").then(store => {
-      if (store.setting_bookmarkAutoSync) {
-        resolve();
-      } else {
+    browser.storage.local
+      .get("setting_bookmarkAutoSync")
+      .then(store => {
+        if (store.setting_bookmarkAutoSync) {
+          resolve();
+        } else {
+          reject();
+        }
+      })
+      .catch(err => {
+        console.log("Error getting auto sync setting", err);
         reject();
-      }
-    });
+      });
   });
 
 let mf2Bookmarks = {};
@@ -81,25 +87,24 @@ browser.bookmarks.onMoved.addListener((id, bookmark) => {
   shouldAutoPushBookmarks()
     .then(() => {
       if (mf2Bookmarks[id]) {
-        bookmarks.toMf2(...bookmark).then(mf2 => {
-          const update = {
-            replace: {
-              category: mf2.properties.category
-            }
-          };
-          micropub
-            .update(mf2Bookmarks[id], update)
-            .then(url => {
-              notification(
-                "Successfully updated bookmark post categories",
-                "Moved Bookmark"
-              );
-            })
-            .catch(err => {
-              console.log(err);
-              errorNotification(err.message);
-            });
-        });
+        bookmark = new Bookmark(bookmark);
+        const update = {
+          replace: {
+            category: bookmark.mf2.properties.category
+          }
+        };
+        micropub
+          .update(mf2Bookmarks[id], update)
+          .then(url => {
+            notification(
+              "Successfully updated bookmark post categories",
+              "Moved Bookmark"
+            );
+          })
+          .catch(err => {
+            console.log(err);
+            errorNotification(err.message);
+          });
       }
     })
     .catch(() => {});
@@ -133,6 +138,10 @@ browser.runtime.onMessage.addListener((request, sender) => {
   switch (request.action) {
     case "getLastLocation": {
       return Promise.resolve({ location: lastLocation });
+      break;
+    }
+    case "getSettings": {
+      return browser.storage.local.get();
       break;
     }
     default: {
