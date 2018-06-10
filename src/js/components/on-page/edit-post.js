@@ -1,7 +1,7 @@
 import React from "react";
 import { Group, Button } from "rebass";
 import Popout from "./popout";
-import Mf2Editor from "../mf2-editor";
+import PopoutForm from "./popout-form";
 import MediumEditor from "medium-editor";
 import micropub from "../../modules/micropub";
 import * as templateUtils from "../../modules/template-utils";
@@ -170,6 +170,12 @@ class PostEditor extends React.Component {
 
   render() {
     if (this.state.open) {
+      const shownProperties = Object.keys(this.state.mf2.properties).filter(
+        key => key != "name" && key != "content"
+      );
+      shownProperties.push("post-status");
+      shownProperties.push("visibility");
+      shownProperties.push("mp-slug");
       return (
         <React.Fragment>
           <Group>
@@ -180,24 +186,10 @@ class PostEditor extends React.Component {
             <Button onClick={this.handleDelete}>🗑</Button>
           </Group>
           <Popout open={this.state.popoutOpen}>
-            <Mf2Editor
+            <PopoutForm
               onChange={mf2 => this.setState({ mf2 })}
               properties={this.state.mf2.properties}
-              hiddenProperties={[
-                "name",
-                "content",
-                "in-reply-to",
-                "like-of",
-                "bookmark-of",
-                "in-reply-to",
-                "summary",
-                "featured"
-              ].filter(
-                name =>
-                  name == "content" ||
-                  name == "name" ||
-                  typeof this.state.mf2.properties[name] == "undefined"
-              )}
+              shownProperties={shownProperties}
             />
           </Popout>
         </React.Fragment>

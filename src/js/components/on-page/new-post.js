@@ -2,7 +2,7 @@ import browser from "webextension-polyfill";
 import React from "react";
 import { Group, Button } from "rebass";
 import Popout from "./popout";
-import Mf2Editor from "../mf2-editor";
+import PopoutForm from "./popout-form";
 import MediumEditor from "medium-editor";
 import micropub from "../../modules/micropub";
 import * as templateUtils from "../../modules/template-utils";
@@ -108,6 +108,7 @@ class PostCreator extends React.Component {
                 image.style.opacity = 1;
                 image.title = "";
                 image.src = url;
+                console.log("photo posted to media endpoint", url);
                 mf2.properties.photo.push(url);
                 this.setState({ mf2 });
               })
@@ -196,17 +197,14 @@ class PostCreator extends React.Component {
             </Button>
           </Group>
           <Popout open={this.state.popoutOpen}>
-            <Mf2Editor
+            <PopoutForm
               properties={this.state.mf2.properties}
-              hiddenProperties={[
-                "name",
-                "content",
-                "in-reply-to",
-                "like-of",
-                "bookmark-of",
-                "in-reply-to",
+              shownProperties={[
                 "summary",
-                "featured"
+                "mp-slug",
+                "visibility",
+                "post-status"
+                // "featured"
               ]}
               onChange={this.handleMf2Change}
               syndication={this.state.syndicationProviders}

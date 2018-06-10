@@ -1,6 +1,16 @@
 import browser from "webextension-polyfill";
 import React, { Component, Fragment } from "react";
-import { Button, Label, Input, Textarea, Switch, Small, Divider } from "rebass";
+import {
+  Button,
+  Label,
+  Input,
+  Select,
+  Textarea,
+  Switch,
+  Small,
+  Divider,
+  Box
+} from "rebass";
 import Tabs, { TabPane } from "./popup-tabs";
 import micropub from "../modules/micropub";
 import { sync as syncBookmarks } from "../modules/bookmarks";

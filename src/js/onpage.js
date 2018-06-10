@@ -14,6 +14,7 @@ import App from "./components/on-page-container";
 // Inject editor onto page
 const onPageContainer = document.createElement("div");
 onPageContainer.id = "postrchild-extension-app-container";
+onPageContainer.className = "postrchild-extension-app-container";
 onPageContainer.style.position = "fixed";
 onPageContainer.style.bottom = "20px";
 onPageContainer.style.right = "20px";
