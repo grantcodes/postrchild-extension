@@ -10,6 +10,10 @@ It may do more things in the future.
 
 [https://addons.mozilla.org/en-US/firefox/addon/postrchild/](https://addons.mozilla.org/en-US/firefox/addon/postrchild/)
 
+### Chrome
+
+[https://chrome.google.com/webstore/detail/ecifafdialoohbgngelfbjplgbhiklpm](https://chrome.google.com/webstore/detail/ecifafdialoohbgngelfbjplgbhiklpm)
+
 ### Build from souce
 
 Clone this repo then run `npm install` and `npm run build` inside the root directory.
