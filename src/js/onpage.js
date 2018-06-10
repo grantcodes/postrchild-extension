@@ -2,8 +2,8 @@ import "medium-editor/dist/css/medium-editor.min.css";
 import "medium-editor/dist/css/themes/default.min.css";
 
 import browser from "webextension-polyfill";
-import metadataparser from "page-metadata-parser";
-import Microformats from "microformat-shiv";
+// import metadataparser from "page-metadata-parser";
+// import Microformats from "microformat-shiv";
 import MediumEditor from "medium-editor";
 import micropub from "./modules/micropub";
 
@@ -68,36 +68,36 @@ if (
     });
 }
 
-// Get MF2 data for the current page
-browser.runtime.onMessage.addListener((request, sender) => {
-  if (request.action == "getPageMF2") {
-    const metadata = metadataparser.getMetadata(
-      window.document,
-      window.location
-    );
+// // Get MF2 data for the current page
+// browser.runtime.onMessage.addListener((request, sender) => {
+//   if (request.action == "getPageMF2") {
+//     const metadata = metadataparser.getMetadata(
+//       window.document,
+//       window.location
+//     );
 
-    let mf2 = {
-      type: ["h-entry"],
-      properties: {
-        name: [metadata.title],
-        summary: [metadata.description],
-        featured: [metadata.image],
-        url: [window.location.url]
-      }
-    };
+//     let mf2 = {
+//       type: ["h-entry"],
+//       properties: {
+//         name: [metadata.title],
+//         summary: [metadata.description],
+//         featured: [metadata.image],
+//         url: [window.location.url]
+//       }
+//     };
 
-    const hEntries = document.getElementsByClassName("h-entry");
+//     const hEntries = document.getElementsByClassName("h-entry");
 
-    if (hEntries && hEntries.length === 1) {
-      const { items } = Microformats.get({ filters: ["h-entry"] });
+//     if (hEntries && hEntries.length === 1) {
+//       const { items } = Microformats.get({ filters: ["h-entry"] });
 
-      if (items && items.length === 1) {
-        const item = items[0];
-        if (Object.keys(item.properties).length > 1) {
-          mf2 = item;
-        }
-      }
-    }
-    return Promise.resolve({ mf2: mf2 });
-  }
-});
+//       if (items && items.length === 1) {
+//         const item = items[0];
+//         if (Object.keys(item.properties).length > 1) {
+//           mf2 = item;
+//         }
+//       }
+//     }
+//     return Promise.resolve({ mf2: mf2 });
+//   }
+// });

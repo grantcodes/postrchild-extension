@@ -1,10 +1,16 @@
-# Unamed Micropub Browser Extension
+# PostrChild Browser Extension
 
 This is an experimental WebExtension that enables inline micropub publishing on your own website.
 
 It may do more things in the future.
 
 ## Installation
+
+### Firefox
+
+[https://addons.mozilla.org/en-US/firefox/addon/postrchild/](https://addons.mozilla.org/en-US/firefox/addon/postrchild/)
+
+### Build from souce
 
 Clone this repo then run `npm install` and `npm run build` inside the root directory.
 

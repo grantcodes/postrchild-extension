@@ -75,7 +75,8 @@ var options = {
     minimizer: [
       new UglifyJsPlugin({
         cache: false,
-        parallel: false
+        parallel: false,
+        sourceMap: false
       })
     ]
   },
