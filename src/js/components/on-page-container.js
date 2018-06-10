@@ -19,41 +19,41 @@ class OnPageContainer extends React.Component {
   }
 
   componentDidMount() {
-    // if (window.location.href.indexOf(micropub.options.me) === 0) {
-    // On the authed site, so check if we should load editor stuff
-    const hEntries = document.getElementsByClassName("h-entry");
-    if (hEntries) {
-      if (hEntries.length === 1) {
-        this.setState({ action: "edit", firstHEntry: hEntries[0] });
-      } else if (hEntries.length > 1) {
-        browser.storage.local
-          .get("setting_newPostTemplate")
-          .then(template => {
-            if (template && template.setting_newPostTemplate) {
-              let tmpTemplate = document.createElement("div");
-              tmpTemplate.innerHTML = template.setting_newPostTemplate.trim();
-              template = tmpTemplate;
-            } else {
-              // Create a template based off the last post.
-              template = sanitizeTemplate(hEntries[0]);
-            }
-            this.setState({
-              action: "add",
-              firstHEntry: hEntries[0],
-              createTemplate: template
+    if (window.location.href.indexOf(micropub.options.me) === 0) {
+      // On the authed site, so check if we should load editor stuff
+      const hEntries = document.getElementsByClassName("h-entry");
+      if (hEntries) {
+        if (hEntries.length === 1) {
+          this.setState({ action: "edit", firstHEntry: hEntries[0] });
+        } else if (hEntries.length > 1) {
+          browser.storage.local
+            .get("setting_newPostTemplate")
+            .then(template => {
+              if (template && template.setting_newPostTemplate) {
+                let tmpTemplate = document.createElement("div");
+                tmpTemplate.innerHTML = template.setting_newPostTemplate.trim();
+                template = tmpTemplate;
+              } else {
+                // Create a template based off the last post.
+                template = sanitizeTemplate(hEntries[0]);
+              }
+              this.setState({
+                action: "add",
+                firstHEntry: hEntries[0],
+                createTemplate: template
+              });
+            })
+            .catch(err => {
+              console.log(err);
+              this.setState({
+                action: "add",
+                firstHEntry: hEntries[0],
+                createTemplate: removeText(hEntries[0])
+              });
             });
-          })
-          .catch(err => {
-            console.log(err);
-            this.setState({
-              action: "add",
-              firstHEntry: hEntries[0],
-              createTemplate: removeText(hEntries[0])
-            });
-          });
+        }
       }
     }
-    // }
   }
 
   render() {
