@@ -7,7 +7,6 @@
     "start": "node utils/webserver.js"
   },
   "dependencies": {
-    "@microsoft/microsoft-graph-client": "^1.0.0",
     "medium-editor": "^5.23.3",
     "microformat-shiv": "^2.0.3",
     "micropub-client-editor": "^1.0.0",
@@ -17,7 +16,6 @@
     "qs": "^6.5.2",
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
-    "react-quill": "^1.2.7",
     "rebass": "^2.0.0-2",
     "webextension-polyfill": "^0.2.1"
   },

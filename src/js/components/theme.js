@@ -4,8 +4,9 @@ import { createColors } from "rebass/src/colors";
 import CssReset from "./css-reset";
 
 const theme = {
-  colors: createColors("#0a7bdb")
+  colors: createColors("#6142a5")
 };
+theme.colors.blue = "#6142a5";
 
 const Theme = props => (
   <Provider theme={theme}>
