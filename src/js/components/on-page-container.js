@@ -1,7 +1,6 @@
 import browser from "webextension-polyfill";
 import React from "react";
 import { hot } from "react-hot-loader";
-import { ButtonCircle } from "rebass";
 import Theme from "./theme";
 import PostEditor from "./on-page/edit-post";
 import PostCreator from "./on-page/new-post";
