@@ -1,3 +1,5 @@
+import browser from "webextension-polyfill";
+
 const hasParentClass = function(el, cls) {
   while ((el = el.parentElement) && !el.classList.contains(cls));
   return el;
@@ -105,3 +107,26 @@ export const getTitleEl = template => {
 
   return titleEl;
 };
+
+export const getNewPostTemplate = () =>
+  new Promise((resolve, reject) => {
+    browser.storage.local
+      .get("setting_newPostTemplate")
+      .then(template => {
+        if (template && template.setting_newPostTemplate) {
+          let tmpTemplate = document.createElement("div");
+          tmpTemplate.innerHTML = template.setting_newPostTemplate.trim();
+          template = tmpTemplate;
+        } else {
+          // Create a template based off the last post.
+          template = sanitizeTemplate(
+            document.getElementsByClassName("h-entry")[0]
+          );
+        }
+        resolve(template);
+      })
+      .catch(err => {
+        console.log("Error getting new post template", err);
+        reject(err);
+      });
+  });

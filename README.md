@@ -16,9 +16,9 @@ It may do more things in the future.
 
 ### Build from souce
 
-Clone this repo then run `npm install` and `npm run build` inside the root directory.
+Clone this repo from https://github.com/grantcodes/postrchild-extension.git then run `npm install` and `npm run build` inside the root directory.
 
-That should create a `/build` folder that you can install in your browser.
+That should create a `/build` folder and a .zip file that you can install in your browser.
 
 ## Usage
 

@@ -10,7 +10,6 @@ class PostEditor extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false,
       popoutOpen: false,
       titleEditor: false,
       contentEditor: false,
@@ -20,16 +19,21 @@ class PostEditor extends React.Component {
       originalProperties: {}
     };
     this.loadEditor = this.loadEditor.bind(this);
-    this.handleEdit = this.handleEdit.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  componentDidMount() {}
-
-  handleEdit() {
-    this.setState({ open: true });
+  componentDidMount() {
     this.loadEditor();
+  }
+
+  handleCancel() {
+    let titleEditor = this.state.titleEditor;
+    let contentEditor = this.state.contentEditor;
+    titleEditor.destroy();
+    contentEditor.destroy();
+    document.getElementById("postrchild-extension-app-container").remove();
   }
 
   handleDelete() {
@@ -87,7 +91,6 @@ class PostEditor extends React.Component {
         .update(window.location.href, update)
         .then(res => {
           this.setState({
-            open: false,
             titleEditor,
             contentEditor
           });
@@ -96,7 +99,6 @@ class PostEditor extends React.Component {
         .catch(err => {
           console.log(err);
           this.setState({
-            open: false,
             titleEditor,
             contentEditor
           });
@@ -169,34 +171,38 @@ class PostEditor extends React.Component {
   }
 
   render() {
-    if (this.state.open) {
-      const shownProperties = Object.keys(this.state.mf2.properties).filter(
-        key => key != "name" && key != "content"
-      );
-      shownProperties.push("post-status");
-      shownProperties.push("visibility");
-      shownProperties.push("mp-slug");
-      return (
-        <React.Fragment>
-          <Group>
-            <Button onClick={this.handleSubmit}>Save Post</Button>
-            <Button onClick={() => this.setState({ popoutOpen: true })}>
-              ⚙
-            </Button>
-            <Button onClick={this.handleDelete}>🗑</Button>
-          </Group>
-          <Popout open={this.state.popoutOpen}>
-            <PopoutForm
-              onChange={mf2 => this.setState({ mf2 })}
-              properties={this.state.mf2.properties}
-              shownProperties={shownProperties}
-            />
-          </Popout>
-        </React.Fragment>
-      );
-    } else {
-      return <Button onClick={this.handleEdit}>Edit Post</Button>;
-    }
+    const shownProperties = Object.keys(this.state.mf2.properties).filter(
+      key => key != "name" && key != "content"
+    );
+    shownProperties.push("post-status");
+    shownProperties.push("visibility");
+    shownProperties.push("mp-slug");
+    return (
+      <React.Fragment>
+        <Group>
+          <Button onClick={this.handleSubmit}>Save Post</Button>
+          <Button
+            onClick={() => this.setState({ popoutOpen: true })}
+            title="Post Settings"
+          >
+            ⚙
+          </Button>
+          <Button onClick={this.handleDelete} title="Delete">
+            🗑
+          </Button>
+          <Button onClick={this.handleCancel} title="Cancel">
+            ❌
+          </Button>
+        </Group>
+        <Popout open={this.state.popoutOpen}>
+          <PopoutForm
+            onChange={mf2 => this.setState({ mf2 })}
+            properties={this.state.mf2.properties}
+            shownProperties={shownProperties}
+          />
+        </Popout>
+      </React.Fragment>
+    );
   }
 }
 

@@ -149,3 +149,70 @@ browser.runtime.onMessage.addListener((request, sender) => {
     }
   }
 });
+
+// Checks the given tab and enables the page action
+// If it is the users url with more than 0 h-entries then it is enabled
+// If there is a single h-entry is will load the editor
+// If there is more than one h-entry it will load the new post creator
+function initializePageAction(tab) {
+  browser.storage.local.get("setting_micropubMe").then(res => {
+    if (res && res.setting_micropubMe) {
+      const me = res.setting_micropubMe;
+      if (tab.url.indexOf(me) === 0) {
+        browser.tabs
+          .sendMessage(tab.id, { action: "getEntryCount" })
+          .then(res => {
+            if (res && res.count) {
+              console.log("Showing the page action", tab.url);
+              browser.pageAction.show(tab.id);
+            }
+            if (res && res.count === 1) {
+              browser.pageAction.setTitle({
+                tabId: tab.id,
+                title: "Edit Post"
+              });
+            } else if (res && res.count > 1) {
+              browser.pageAction.setTitle({ tabId: tab.id, title: "New Post" });
+            }
+          })
+          .catch(err => {
+            // console.log(
+            //   "Error sending message to onpage js, probably just not loaded",
+            //   err
+            // );
+          });
+      }
+    }
+  });
+}
+
+// On first load check all tabs to enable the page action
+browser.tabs.query({}).then(tabs => {
+  for (let tab of tabs) {
+    initializePageAction(tab);
+  }
+});
+
+// Whenever a tab is updated we need to check if the page action should be shown
+browser.tabs.onUpdated.addListener((id, changeInfo, tab) => {
+  initializePageAction(tab);
+});
+
+// Watches for a click on the page action button and either loads the new post creator or editor
+browser.pageAction.onClicked.addListener(tab => {
+  browser.tabs
+    .sendMessage(tab.id, { action: "getEntryCount" })
+    .then(res => {
+      if (res && res.count === 1) {
+        browser.tabs.sendMessage(tab.id, { action: "showEditor" });
+      } else if (res && res.count > 1) {
+        browser.tabs.sendMessage(tab.id, { action: "showNewPost" });
+      }
+    })
+    .catch(err => {
+      // console.log(
+      //   "Error sending message to onpage js, probably just not loaded",
+      //   err
+      // );
+    });
+});

@@ -73,11 +73,30 @@ var options = {
   },
   optimization: {
     minimizer: [
-      new UglifyJsPlugin({
-        cache: false,
-        parallel: false,
-        sourceMap: false
-      })
+      // I have switched off minification to pass web store rules
+      // new UglifyJsPlugin({
+      //   cache: false,
+      //   parallel: false,
+      //   sourceMap: false,
+      //   uglifyOptions: {
+      //     output: {
+      //       comments: false
+      //     },
+      //     sourceMap: false,
+      //     compress: {
+      //       warnings: false,
+      //       conditionals: true,
+      //       unused: true,
+      //       comparisons: true,
+      //       sequences: true,
+      //       dead_code: true,
+      //       evaluate: true,
+      //       if_return: true,
+      //       join_vars: true,
+      //       negate_iife: false
+      //     }
+      //   }
+      // })
     ]
   },
   plugins: [
@@ -88,6 +107,10 @@ var options = {
       "process.env.NODE_ENV": JSON.stringify(env.NODE_ENV)
     }),
     new CopyWebpackPlugin([
+      // Copy these files to comply with some extension store rules
+      "README.md",
+      "package.json",
+      "package-lock.json",
       {
         from: "src/manifest.json",
         transform: function(content, path) {

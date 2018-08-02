@@ -11,7 +11,6 @@ class PostCreator extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      open: false,
       popoutOpen: false,
       titleEditor: false,
       contentEditor: false,
@@ -23,6 +22,7 @@ class PostCreator extends React.Component {
 
     this.handleOpen = this.handleOpen.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
     this.handleMf2Change = this.handleMf2Change.bind(this);
   }
 
@@ -46,6 +46,8 @@ class PostCreator extends React.Component {
         }
       })
       .catch(err => console.log("Error getting syndication providers", err));
+
+    this.handleOpen();
   }
 
   handleMf2Change(mf2) {
@@ -148,7 +150,7 @@ class PostCreator extends React.Component {
       }
     });
 
-    this.setState({ open: true, titleEditor, contentEditor });
+    this.setState({ titleEditor, contentEditor });
   }
 
   handleSubmit() {
@@ -172,7 +174,7 @@ class PostCreator extends React.Component {
     micropub
       .create(mf2)
       .then(url => {
-        this.setState({ open: false, titleEditor: null, contentEditor: null });
+        this.setState({ titleEditor: null, contentEditor: null });
         if (typeof url == "string") {
           // Sometimes chrome returns a string on success?
           window.location.href = url;
@@ -186,35 +188,54 @@ class PostCreator extends React.Component {
       });
   }
 
+  handleCancel() {
+    const templateEl = this.props.template;
+    let contentEditor = this.state.contentEditor;
+    let titleEditor = this.state.titleEditor;
+    titleEditor.destroy();
+    contentEditor.destroy();
+    templateEl.remove();
+    document.getElementById("postrchild-extension-app-container").remove();
+  }
+
   render() {
-    if (this.state.open) {
-      return (
-        <React.Fragment>
-          <Group>
-            <Button onClick={this.handleSubmit}>Publish</Button>
-            <Button onClick={() => this.setState({ popoutOpen: true })}>
-              ⚙
-            </Button>
-          </Group>
-          <Popout open={this.state.popoutOpen}>
-            <PopoutForm
-              properties={this.state.mf2.properties}
-              shownProperties={[
-                "summary",
-                "mp-slug",
-                "visibility",
-                "post-status"
-                // "featured"
-              ]}
-              onChange={this.handleMf2Change}
-              syndication={this.state.syndicationProviders}
-            />
-          </Popout>
-        </React.Fragment>
-      );
-    } else {
-      return <Button onClick={this.handleOpen}>Add Post</Button>;
+    const sidebarProperties = [
+      "summary",
+      "mp-slug",
+      "visibility",
+      "post-status"
+      // "featured"
+    ];
+    if (
+      this.state.syndicationProviders &&
+      this.state.syndicationProviders.length
+    ) {
+      sidebarProperties.push("mp-syndicate-to");
     }
+    return (
+      <React.Fragment>
+        <Group>
+          <Button onClick={this.handleSubmit}>Publish</Button>
+          <Button
+            onClick={() => this.setState({ popoutOpen: true })}
+            title="Post options"
+          >
+            ⚙
+          </Button>
+          <Button onClick={this.handleCancel} title="Cancel">
+            ❌
+          </Button>
+        </Group>
+        <Popout open={this.state.popoutOpen}>
+          <PopoutForm
+            properties={this.state.mf2.properties}
+            shownProperties={sidebarProperties}
+            onChange={this.handleMf2Change}
+            syndication={this.state.syndicationProviders}
+          />
+        </Popout>
+      </React.Fragment>
+    );
   }
 }
 
