@@ -158,8 +158,12 @@ class PostCreator extends React.Component {
     let titleEditor = this.state.titleEditor;
     const content = contentEditor.getContent();
     const title = titleEditor.getContent();
-    titleEditor.destroy();
-    contentEditor.destroy();
+    if (titleEditor) {
+      titleEditor.destroy();
+    }
+    if (contentEditor) {
+      contentEditor.destroy();
+    }
 
     let mf2 = this.state.mf2;
 
@@ -168,7 +172,7 @@ class PostCreator extends React.Component {
     }
 
     if (content) {
-      mf2.properties.content = [content];
+      mf2.properties.content = [{ html: content }];
     }
 
     micropub
@@ -192,8 +196,12 @@ class PostCreator extends React.Component {
     const templateEl = this.props.template;
     let contentEditor = this.state.contentEditor;
     let titleEditor = this.state.titleEditor;
-    titleEditor.destroy();
-    contentEditor.destroy();
+    if (titleEditor) {
+      titleEditor.destroy();
+    }
+    if (contentEditor) {
+      contentEditor.destroy();
+    }
     templateEl.remove();
     document.getElementById("postrchild-extension-app-container").remove();
   }

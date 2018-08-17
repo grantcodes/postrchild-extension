@@ -31,8 +31,12 @@ class PostEditor extends React.Component {
   handleCancel() {
     let titleEditor = this.state.titleEditor;
     let contentEditor = this.state.contentEditor;
-    titleEditor.destroy();
-    contentEditor.destroy();
+    if (titleEditor) {
+      titleEditor.destroy();
+    }
+    if (contentEditor) {
+      contentEditor.destroy();
+    }
     document.getElementById("postrchild-extension-app-container").remove();
   }
 
@@ -62,7 +66,7 @@ class PostEditor extends React.Component {
       mf2.properties.name = [title];
     }
     if (content) {
-      mf2.properties.content = [content];
+      mf2.properties.content = [{ html: content }];
     }
 
     if (titleEditor) {
@@ -164,7 +168,24 @@ class PostEditor extends React.Component {
       })
       .catch(err => {
         console.log("Query error", err);
-        alert("Error running query source on your post");
+        alert(
+          "Error running query source on your post, you can still edit the post, but it might might be missing something if this page hides some content or something like that"
+        );
+        contentEditor = new MediumEditor(contentEl, {
+          placeholder: {
+            text: "Insert post content here"
+          }
+        });
+        titleEditor = new MediumEditor(titleEl, {
+          toolbar: false,
+          placeholder: {
+            text: "Title"
+          }
+        });
+        this.setState({
+          titleEditor,
+          contentEditor
+        });
       });
     // editor.subscribe("editableInput", (event, editable) => {
     // });

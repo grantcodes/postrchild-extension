@@ -71,34 +71,6 @@ var options = {
       .map(extension => "." + extension)
       .concat([".jsx", ".js", ".css"])
   },
-  optimization: {
-    minimizer: [
-      // I have switched off minification to pass web store rules
-      // new UglifyJsPlugin({
-      //   cache: false,
-      //   parallel: false,
-      //   sourceMap: false,
-      //   uglifyOptions: {
-      //     output: {
-      //       comments: false
-      //     },
-      //     sourceMap: false,
-      //     compress: {
-      //       warnings: false,
-      //       conditionals: true,
-      //       unused: true,
-      //       comparisons: true,
-      //       sequences: true,
-      //       dead_code: true,
-      //       evaluate: true,
-      //       if_return: true,
-      //       join_vars: true,
-      //       negate_iife: false
-      //     }
-      //   }
-      // })
-    ]
-  },
   plugins: [
     // clean the build folder
     new CleanWebpackPlugin(["build"]),

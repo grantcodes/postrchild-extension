@@ -242,15 +242,12 @@ export const getLocal = () =>
 
 export const getOnline = () =>
   new Promise((resolve, reject) => {
-    const search = {
-      "properties.bookmark-of": { $exists: true }
-    };
-    const query = "mongo&limit=9999&mongo=" + JSON.stringify(search);
-
+    const query = "source&post-type=bookmark&limit=9999";
     const url = `${micropub.options.micropubEndpoint}?q=${query}`;
 
     const request = {
       method: "GET",
+      credentials: "omit",
       headers: {
         Authorization: "Bearer " + micropub.options.token,
         "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
@@ -268,7 +265,7 @@ export const getOnline = () =>
         }
         return res.json();
       })
-      .then(bookmarks => resolve(bookmarks.map(data => new Bookmark(data))))
+      .then(data => resolve(data.items.map(data => new Bookmark(data))))
       .catch(err => {
         console.log(
           "Error querying micropub bookmarks, probably because the query is not supported",

@@ -2,7 +2,15 @@
 
 This is an experimental WebExtension that enables inline micropub publishing on your own website.
 
-It may do more things in the future.
+## What does it do?
+
+This extension allows you to publish and edit posts to your [IndieWeb](https://indieweb.org) enabled website via [micropub](https://indieweb.org/micropub)
+
+Editing is done inline by looking for micropub classes on your site and loading a medium style editor.
+
+### Experimental features
+
+As well as creating and editing posts the extension is also able to automatically synchronize your browser bookmarks with bookmarks on your website if you support micropub queries [as discussed here](https://github.com/indieweb/micropub-extensions/issues/4)
 
 ## Installation
 
@@ -22,9 +30,7 @@ That should create a `/build` folder and a .zip file that you can install in you
 
 ## Usage
 
-First you will need to go into the options of the extension and provide your domain, micropub endpoint and an access token.
-
-(I will add a login flow in the future)
+First you will need to go into the options of the extension and provide your domain to login with indieauth and obtain a micropub token.
 
 After that when you browse to your own website you should see a button to add a new post, or if you are viewing a single post, a button to edit that post.
 

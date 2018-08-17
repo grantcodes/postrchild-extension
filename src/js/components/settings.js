@@ -1,16 +1,6 @@
 import browser from "webextension-polyfill";
 import React, { Component, Fragment } from "react";
-import {
-  Button,
-  Label,
-  Input,
-  Select,
-  Textarea,
-  Switch,
-  Small,
-  Divider,
-  Box
-} from "rebass";
+import { Button, Label, Input, Textarea, Switch, Small, Divider } from "rebass";
 import Tabs, { TabPane } from "./popup-tabs";
 import micropub from "../modules/micropub";
 import { sync as syncBookmarks } from "../modules/bookmarks";
@@ -61,6 +51,7 @@ class Settings extends Component {
 
   handleLogin(e) {
     e.preventDefault();
+    micropub.options.me = this.state.setting_micropubMe;
     micropub
       .getAuthUrl()
       .then(url => {
@@ -180,12 +171,12 @@ class Settings extends Component {
         <br />
         <Small>
           This will almost certainly not work fully for you. Full bookmark
-          syncing requires a micropub query api which does not exist yet. My own
-          implementation is just using mongodb query syntax. What should work
-          for you is the automatic creation of micropub bookmark posts on your
-          site. If you hit the sync button it will push all your browser
-          bookmarks as mf2 posts and the extension will automatically create new
-          mf2 bookmark posts when you create a browser bookmark
+          syncing requires a micropub query api which does not fully exist yet.
+          What should work for you is the automatic creation of micropub
+          bookmark posts on your site. If you hit the sync button it will push
+          all your browser bookmarks as mf2 posts and the extension will
+          automatically create new mf2 bookmark posts when you create a browser
+          bookmark
         </Small>
       </form>
     );
