@@ -18,6 +18,7 @@ const CssReset = props => {
           letter-spacing: 0;
           font-weight: ${theme.fontWeights.normal};
           font-size: ${theme.fontSizes[1]}px;
+          border: none;
         }
 
         .postrchild-extension-app-container button:hover,
@@ -32,6 +33,7 @@ const CssReset = props => {
         .postrchild-extension-app-container textarea:hover,
         .postrchild-extension-app-container textarea:focus,
         .postrchild-extension-app-container textarea:active {
+          border: none;
           color: ${theme.colors.black};
           padding: ${theme.space[2]}px ${theme.space[1]}px;
           background-color: transparent;
@@ -45,6 +47,8 @@ const CssReset = props => {
           padding: ${theme.space[2]}px ${theme.space[3]}px;
           color: ${theme.colors.white};
           font-weight: ${theme.fontWeights.bold};
+          border: none;
+          box-shadow: none;
         }
         .postrchild-extension-app-container button:hover,
         .postrchild-extension-app-container button:focus,
