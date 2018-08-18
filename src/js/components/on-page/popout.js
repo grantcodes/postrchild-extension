@@ -1,5 +1,5 @@
-import React, { Component, Fragment } from "react";
-import { Box, ButtonOutline as Button, Close } from "rebass";
+import React, { Component } from "react";
+import { Box, Close } from "rebass";
 
 class Popout extends Component {
   constructor(props) {
@@ -50,7 +50,6 @@ class Popout extends Component {
             background: "transparent"
           }}
         />
-        {/* <Button /> */}
         {this.props.children}
       </Box>
     );

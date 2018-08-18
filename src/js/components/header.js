@@ -1,5 +1,5 @@
 import React from "react";
-import { Banner, Heading } from "rebass";
+import { Banner } from "rebass";
 import icon from "../../img/icon-128.png";
 const Header = () => {
   return (

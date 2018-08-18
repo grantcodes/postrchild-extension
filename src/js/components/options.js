@@ -1,10 +1,8 @@
-import React, { Component, Fragment } from "react";
+import React, { Component } from "react";
 import { hot } from "react-hot-loader";
 import { Box } from "rebass";
 import Theme from "./theme";
 import Settings from "./settings";
-
-import Popout from "./on-page/popout";
 
 class Popup extends Component {
   render() {

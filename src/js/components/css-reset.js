@@ -6,7 +6,6 @@ const CssReset = props => {
   if (props && props.theme) {
     theme = Object.assign({}, theme, props.theme);
   }
-  // console.log(theme);
   return (
     <style>
       {`
