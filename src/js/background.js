@@ -110,36 +110,11 @@ browser.bookmarks.onMoved.addListener((id, bookmark) => {
     .catch(() => {});
 });
 
-// Need to watch for headers from the micropub & media endpoint because they cannot be read by default.
-let lastLocation = null;
-browser.webRequest.onHeadersReceived.addListener(
-  e => {
-    const locationHeader = e.responseHeaders.find(
-      header => header.name.toLowerCase() == "location"
-    );
-    if (locationHeader) {
-      lastLocation = locationHeader.value;
-    } else {
-      lastLocation = null;
-    }
-    return Promise.resolve({ responseHeaders: e.responseHeaders });
-  },
-  {
-    urls: [
-      "https://grant.codes/micropub/micropub",
-      "https://grant.codes/micropub/media"
-    ]
-  },
-  ["blocking", "responseHeaders"]
-);
+// TODO: May need to watch for headers from the micropub & media endpoint with `browser.webRequest.onHeadersReceived` because they cannot be read by default.
 
 // Listen for messages.
 browser.runtime.onMessage.addListener((request, sender) => {
   switch (request.action) {
-    case "getLastLocation": {
-      return Promise.resolve({ location: lastLocation });
-      break;
-    }
     case "getSettings": {
       return browser.storage.local.get();
       break;
@@ -154,41 +129,37 @@ browser.runtime.onMessage.addListener((request, sender) => {
 // If it is the users url with more than 0 h-entries then it is enabled
 // If there is a single h-entry is will load the editor
 // If there is more than one h-entry it will load the new post creator
-function initializePageAction(tab) {
-  browser.storage.local.get("setting_micropubMe").then(res => {
-    if (res && res.setting_micropubMe) {
-      const me = res.setting_micropubMe;
+async function initializePageAction(tab) {
+  try {
+    const store = await browser.storage.local.get("setting_micropubMe");
+    if (store && store.setting_micropubMe) {
+      const me = store.setting_micropubMe;
       if (tab.url.indexOf(me) === 0) {
-        browser.tabs
-          .sendMessage(tab.id, { action: "getEntryCount" })
-          .then(res => {
-            if (res && res.count) {
-              console.log("Showing the page action", tab.url);
-              browser.pageAction.show(tab.id);
-            }
-            if (res && res.count === 1) {
-              browser.pageAction.setTitle({
-                tabId: tab.id,
-                title: "Edit Post"
-              });
-            } else if (res && res.count > 1) {
-              browser.pageAction.setTitle({ tabId: tab.id, title: "New Post" });
-            }
-          })
-          .catch(err => {
-            // console.log(
-            //   "Error sending message to onpage js, probably just not loaded",
-            //   err
-            // );
+        const res = await browser.tabs.sendMessage(tab.id, {
+          action: "getEntryCount"
+        });
+        if (res && res.count) {
+          console.log("Showing the page action", tab.url);
+          browser.pageAction.show(tab.id);
+        }
+        if (res && res.count === 1) {
+          browser.pageAction.setTitle({
+            tabId: tab.id,
+            title: "Edit Post"
           });
+        } else if (res && res.count > 1) {
+          browser.pageAction.setTitle({ tabId: tab.id, title: "New Post" });
+        }
       }
     }
-  });
+  } catch (err) {
+    console.log("Error initializing page action", err);
+  }
 }
 
 // On first load check all tabs to enable the page action
 browser.tabs.query({}).then(tabs => {
-  for (let tab of tabs) {
+  for (const tab of tabs) {
     initializePageAction(tab);
   }
 });
@@ -199,20 +170,13 @@ browser.tabs.onUpdated.addListener((id, changeInfo, tab) => {
 });
 
 // Watches for a click on the page action button and either loads the new post creator or editor
-browser.pageAction.onClicked.addListener(tab => {
-  browser.tabs
-    .sendMessage(tab.id, { action: "getEntryCount" })
-    .then(res => {
-      if (res && res.count === 1) {
-        browser.tabs.sendMessage(tab.id, { action: "showEditor" });
-      } else if (res && res.count > 1) {
-        browser.tabs.sendMessage(tab.id, { action: "showNewPost" });
-      }
-    })
-    .catch(err => {
-      // console.log(
-      //   "Error sending message to onpage js, probably just not loaded",
-      //   err
-      // );
-    });
+browser.pageAction.onClicked.addListener(async tab => {
+  const res = await browser.tabs.sendMessage(tab.id, {
+    action: "getEntryCount"
+  });
+  if (res && res.count === 1) {
+    browser.tabs.sendMessage(tab.id, { action: "showEditor" });
+  } else if (res && res.count > 1) {
+    browser.tabs.sendMessage(tab.id, { action: "showNewPost" });
+  }
 });

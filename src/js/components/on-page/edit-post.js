@@ -40,22 +40,19 @@ class PostEditor extends React.Component {
     document.getElementById("postrchild-extension-app-container").remove();
   }
 
-  handleDelete() {
+  async handleDelete() {
     if (window.confirm("Are you sure you want to delete this?")) {
-      micropub
-        .delete(window.location.href)
-        .then(res => {
-          // Deleted, lets reload
-          window.location.reload();
-        })
-        .catch(err => {
-          console.log("Error deleting", err);
-          alert("Error deleting post");
-        });
+      try {
+        await micropub.delete(window.location.href);
+        window.location.reload();
+      } catch (err) {
+        console.log("Error deleting", err);
+        alert("Error deleting post");
+      }
     }
   }
 
-  handleSubmit() {
+  async handleSubmit() {
     let mf2 = this.state.mf2;
     let titleEditor = this.state.titleEditor;
     let contentEditor = this.state.contentEditor;
@@ -91,29 +88,27 @@ class PostEditor extends React.Component {
     });
 
     if (Object.keys(update.replace).length) {
-      micropub
-        .update(window.location.href, update)
-        .then(res => {
-          this.setState({
-            titleEditor,
-            contentEditor
-          });
-          window.location.reload();
-        })
-        .catch(err => {
-          console.log(err);
-          this.setState({
-            titleEditor,
-            contentEditor
-          });
-          alert("Error updating post: " + err.message);
+      try {
+        await micropub.update(window.location.href, update);
+        this.setState({
+          titleEditor,
+          contentEditor
         });
+        window.location.reload();
+      } catch (err) {
+        console.log("Error updating post", err);
+        this.setState({
+          titleEditor,
+          contentEditor
+        });
+        alert("Error updating post: " + err.message);
+      }
     } else {
       alert("Nothing appears to be updated");
     }
   }
 
-  loadEditor() {
+  async loadEditor() {
     const postEl = this.props.post;
     let contentEl = templateUtils.getContentEl(postEl);
     let titleEl = templateUtils.getTitleEl(postEl);
@@ -122,71 +117,50 @@ class PostEditor extends React.Component {
     if (!contentEl) {
       alert("Error finding your content to edit.");
     }
-    micropub
-      .querySource(window.location.href)
-      .then(post => {
-        if (post && post.properties) {
-          this.setState({
-            mf2: post,
-            originalProperties: Object.assign({}, post.properties)
-          });
-        }
-        if (
-          post.properties &&
-          post.properties.name &&
-          post.properties.name[0]
-        ) {
-          titleEl.innerText = post.properties.name[0];
-        }
-        if (
-          post.properties &&
-          post.properties.content &&
-          post.properties.content[0]
-        ) {
-          const content = post.properties.content[0];
-          if (typeof content == "object" && content.html) {
-            contentEl.innerHTML = content.html;
-          } else if (typeof content == "string") {
-            contentEl.innerText = content;
-          }
-        }
-        contentEditor = new MediumEditor(contentEl, {
-          placeholder: {
-            text: "Insert post content here"
-          }
-        });
-        titleEditor = new MediumEditor(titleEl, {
-          toolbar: false,
-          placeholder: {
-            text: "Title"
-          }
-        });
+    try {
+      const post = await micropub.querySource(window.location.href);
+      if (post && post.properties) {
         this.setState({
-          titleEditor,
-          contentEditor
+          mf2: post,
+          originalProperties: Object.assign({}, post.properties)
         });
-      })
-      .catch(err => {
-        console.log("Query error", err);
-        alert(
-          "Error running query source on your post, you can still edit the post, but it might might be missing something if this page hides some content or something like that"
-        );
-        contentEditor = new MediumEditor(contentEl, {
-          placeholder: {
-            text: "Insert post content here"
-          }
-        });
-        titleEditor = new MediumEditor(titleEl, {
-          toolbar: false,
-          placeholder: {
-            text: "Title"
-          }
-        });
-        this.setState({
-          titleEditor,
-          contentEditor
-        });
-      });
+      }
+      if (post.properties && post.properties.name && post.properties.name[0]) {
+        titleEl.innerText = post.properties.name[0];
+      }
+      if (
+        post.properties &&
+        post.properties.content &&
+        post.properties.content[0]
+      ) {
+        const content = post.properties.content[0];
+        if (typeof content == "object" && content.html) {
+          contentEl.innerHTML = content.html;
+        } else if (typeof content == "string") {
+          contentEl.innerText = content;
+        }
+      }
+    } catch (err) {
+      console.log("Query error", err);
+      alert(
+        "Error running query source on your post, you can still edit the post, but it might might be missing something if this page hides some content or something like that"
+      );
+    }
+    contentEditor = new MediumEditor(contentEl, {
+      placeholder: {
+        text: "Insert post content here"
+      }
+    });
+    titleEditor = new MediumEditor(titleEl, {
+      toolbar: false,
+      placeholder: {
+        text: "Title"
+      }
+    });
+    this.setState({
+      titleEditor,
+      contentEditor
+    });
     // editor.subscribe("editableInput", (event, editable) => {
     // });
   }

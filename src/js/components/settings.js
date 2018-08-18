@@ -16,18 +16,6 @@ class Settings extends Component {
       bookmarkAutoSync: false,
       bookmarksSyncing: false
     };
-    browser.storage.local
-      .get()
-      .then(store => {
-        this.setState({
-          micropubMe: store.setting_micropubMe,
-          micropubToken: store.setting_micropubToken,
-          micropubEndpoint: store.setting_micropubEndpoint,
-          newPostTemplate: store.setting_newPostTemplate,
-          bookmarkAutoSync: store.setting_bookmarkAutoSync ? true : false
-        });
-      })
-      .catch(err => console.log("Error getting local browser settings", err));
 
     this.handleLogin = this.handleLogin.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -35,7 +23,17 @@ class Settings extends Component {
     this.renderBasicItem = this.renderBasicItem.bind(this);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
+    // Get local settings
+    const store = await browser.storage.local.get();
+    this.setState({
+      micropubMe: store.setting_micropubMe,
+      micropubToken: store.setting_micropubToken,
+      micropubEndpoint: store.setting_micropubEndpoint,
+      newPostTemplate: store.setting_newPostTemplate,
+      bookmarkAutoSync: store.setting_bookmarkAutoSync ? true : false
+    });
+
     browser.runtime.onMessage.addListener((request, sender) => {
       switch (request.action) {
         case "isSyncing": {
@@ -49,42 +47,31 @@ class Settings extends Component {
     });
   }
 
-  handleLogin(e) {
+  async handleLogin(e) {
     e.preventDefault();
-    micropub.options.me = this.state.setting_micropubMe;
-    micropub
-      .getAuthUrl()
-      .then(url => {
-        browser.storage.local
-          .set({
-            setting_tokenEndpoint: micropub.options.tokenEndpoint,
-            setting_micropubEndpoint: micropub.options.micropubEndpoint
-          })
-          .then(() => {
-            // window.location = url;
-            browser.tabs.create({ url });
-          })
-          .catch(err =>
-            console.log("Error setting endpoints in browser storage", err)
-          );
-      })
-      .catch(err => {
-        console.log(err);
+    try {
+      micropub.options.me = this.state.micropubMe;
+      const url = await micropub.getAuthUrl();
+      await browser.storage.local.set({
+        setting_tokenEndpoint: micropub.options.tokenEndpoint,
+        setting_micropubEndpoint: micropub.options.micropubEndpoint
       });
+      await browser.tabs.create({ url });
+    } catch (err) {
+      console.log("Error creating login tab", err);
+    }
   }
 
-  handleSyncBookmarks(e) {
+  async handleSyncBookmarks(e) {
     e.preventDefault();
     this.setState({ bookmarksSyncing: true });
     // Do the callback on a timeout to allow the background script time to check if the sync is happening
-    syncBookmarks()
-      .then(() =>
-        setTimeout(() => this.setState({ bookmarksSyncing: false }), 500)
-      )
-      .catch(err => {
-        console.log("Error syncing bookmarks", err);
-        setTimeout(() => this.setState({ bookmarksSyncing: false }), 500);
-      });
+    try {
+      await syncBookmarks();
+    } catch (err) {
+      console.log("Error syncing bookmarks", err);
+    }
+    setTimeout(() => this.setState({ bookmarksSyncing: false }), 500);
   }
 
   handleChange(name) {

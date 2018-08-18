@@ -26,26 +26,22 @@ class PostCreator extends React.Component {
     this.handleMf2Change = this.handleMf2Change.bind(this);
   }
 
-  componentDidMount() {
-    if (!micropub.options.mediaEndpoint) {
-      micropub
-        .query("config")
-        .then(config => {
-          if (config["media-endpoint"]) {
-            micropub.options.mediaEndpoint = config["media-endpoint"];
-          }
-        })
-        .catch(err => console.log("Micropub config error", err));
-    }
-
-    micropub
-      .query("syndicate-to")
-      .then(res => {
-        if (res["syndicate-to"]) {
-          this.setState({ syndicationProviders: res["syndicate-to"] });
+  async componentDidMount() {
+    try {
+      if (!micropub.options.mediaEndpoint) {
+        const config = await micropub.query("config");
+        if (config["media-endpoint"]) {
+          micropub.options.mediaEndpoint = config["media-endpoint"];
         }
-      })
-      .catch(err => console.log("Error getting syndication providers", err));
+      }
+
+      const res = await micropub.query("syndicate-to");
+      if (res["syndicate-to"]) {
+        this.setState({ syndicationProviders: res["syndicate-to"] });
+      }
+    } catch (err) {
+      console.log("Error querying micropub endpoint", err);
+    }
 
     this.handleOpen();
   }
@@ -54,7 +50,7 @@ class PostCreator extends React.Component {
     this.setState({ mf2: mf2 });
   }
 
-  handleOpen() {
+  async handleOpen() {
     let titleEditor = this.state.titleEditor;
     let contentEditor = this.state.contentEditor;
     const templateEl = this.props.template;
@@ -82,7 +78,7 @@ class PostCreator extends React.Component {
       upload.style.display = "block";
       photoEl.appendChild(upload);
       photoEl.appendChild(previews);
-      upload.addEventListener("change", e => {
+      upload.addEventListener("change", async e => {
         previews.innerHTML = "";
         for (let i = 0; i < upload.files.length; i++) {
           const file = upload.files[i];
@@ -104,30 +100,17 @@ class PostCreator extends React.Component {
             if (!mf2.properties.photo) {
               mf2.properties.photo = [];
             }
-            micropub
-              .postMedia(file)
-              .then(url => {
-                image.style.opacity = 1;
-                image.title = "";
-                image.src = url;
-                console.log("photo posted to media endpoint", url);
-                mf2.properties.photo.push(url);
-                this.setState({ mf2 });
-              })
-              .catch(err => {
-                browser.runtime
-                  .sendMessage({ action: "getLastLocation" })
-                  .then(res => {
-                    if (res.location) {
-                      const url = res.location;
-                      image.style.opacity = 1;
-                      image.title = "";
-                      image.src = url;
-                      mf2.properties.photo.push(url);
-                      this.setState({ mf2 });
-                    }
-                  });
-              });
+            try {
+              const url = await micropub.postMedia(file);
+              image.style.opacity = 1;
+              image.title = "";
+              image.src = url;
+              console.log("photo posted to media endpoint", url);
+              mf2.properties.photo.push(url);
+              this.setState({ mf2 });
+            } catch (err) {
+              console.log("Error posting photo", err);
+            }
           }
         }
       });
@@ -153,43 +136,41 @@ class PostCreator extends React.Component {
     this.setState({ titleEditor, contentEditor });
   }
 
-  handleSubmit() {
-    let contentEditor = this.state.contentEditor;
-    let titleEditor = this.state.titleEditor;
-    const content = contentEditor.getContent();
-    const title = titleEditor.getContent();
-    if (titleEditor) {
-      titleEditor.destroy();
-    }
-    if (contentEditor) {
-      contentEditor.destroy();
-    }
+  async handleSubmit() {
+    try {
+      let contentEditor = this.state.contentEditor;
+      let titleEditor = this.state.titleEditor;
+      const content = contentEditor.getContent();
+      const title = titleEditor.getContent();
+      if (titleEditor) {
+        titleEditor.destroy();
+      }
+      if (contentEditor) {
+        contentEditor.destroy();
+      }
 
-    let mf2 = this.state.mf2;
+      let mf2 = this.state.mf2;
 
-    if (title) {
-      mf2.properties.name = [title];
+      if (title) {
+        mf2.properties.name = [title];
+      }
+
+      if (content) {
+        mf2.properties.content = [{ html: content }];
+      }
+
+      const url = await micropub.create(mf2);
+      this.setState({ titleEditor: null, contentEditor: null });
+      if (typeof url == "string") {
+        // Sometimes chrome returns a string on success?
+        window.location.href = url;
+      } else {
+        window.location.reload();
+      }
+    } catch (err) {
+      console.log("Error creating post", err);
+      alert("Error creating new post: " + err.message);
     }
-
-    if (content) {
-      mf2.properties.content = [{ html: content }];
-    }
-
-    micropub
-      .create(mf2)
-      .then(url => {
-        this.setState({ titleEditor: null, contentEditor: null });
-        if (typeof url == "string") {
-          // Sometimes chrome returns a string on success?
-          window.location.href = url;
-        } else {
-          window.location.reload();
-        }
-      })
-      .catch(err => {
-        console.log(err);
-        alert("Error creating new post: " + err.message);
-      });
   }
 
   handleCancel() {

@@ -94,276 +94,233 @@ export default class Bookmark {
       return result;
     };
 
-    return new Promise((resolve, reject) => {
-      let folderIndex = 0;
-      const folders = this.browser.folder.split("/").filter(folder => folder);
-      if (!folders || !folders.length) {
-        return resolve();
+    let folderIndex = 0;
+    const folders = this.browser.folder.split("/").filter(folder => folder);
+    if (!folders || !folders.length) {
+      return resolve();
+    }
+
+    const tree = await browser.bookmarks.getTree();
+    let existingFolders = flatten(tree).filter(item =>
+      Array.isArray(item.children)
+    );
+
+    async function createFolder(name, parentId = false) {
+      let newFolder = {
+        title: name
+      };
+
+      if (parentId) {
+        newFolder.parentId = parentId;
       }
 
-      browser.bookmarks
-        .getTree()
-        .then(tree => {
-          const self = this;
-          let existingFolders = flatten(tree).filter(item =>
-            Array.isArray(item.children)
-          );
+      const existingFolder = existingFolders.find(folder => {
+        const oldTitle = folder.title.trim().toLowerCase();
+        const newTitle = name.trim().toLowerCase();
+        if (parentId && oldTitle == newTitle && folder.parentId == parentId) {
+          return true;
+        }
+        if (!parentId && oldTitle == newTitle) {
+          return true;
+        }
+        return false;
+      });
 
-          async function createFolder(name, parentId = false) {
-            return new Promise((createFolderResolve, createFolderReject) => {
-              let newFolder = {
-                title: name
-              };
-
-              if (parentId) {
-                newFolder.parentId = parentId;
-              }
-
-              const existingFolder = existingFolders.find(folder => {
-                const oldTitle = folder.title.trim().toLowerCase();
-                const newTitle = name.trim().toLowerCase();
-                if (
-                  parentId &&
-                  oldTitle == newTitle &&
-                  folder.parentId == parentId
-                ) {
-                  return true;
-                }
-                if (!parentId && oldTitle == newTitle) {
-                  return true;
-                }
-                return false;
-              });
-              if (existingFolder) {
-                // Folder exists, create the next level
-                return createFolderResolve(existingFolder.id);
-              } else {
-                // Folder doesn't exist so let's create it
-                browser.bookmarks.create(newFolder).then(res => {
-                  existingFolders.push(res);
-                  return createFolderResolve(res.id);
-                });
-              }
-            });
-          }
-
-          async function createFolders(folders) {
-            let parentId = null;
-            for (const folder of folders) {
-              parentId = await createFolder(folder, parentId);
-            }
-            self.browser.parentId = parentId;
-            resolve();
-          }
-
-          createFolders(folders);
-        })
-        .catch(err => reject(err));
-    });
-  }
-
-  createLocal() {
-    return this.createLocalFolder().then(() => {
-      let browserBookmark = this.browser;
-      delete browserBookmark.folder;
-      return browser.bookmarks.create(browserBookmark);
-    });
-  }
-
-  createMicropub() {
-    // TODO: Would like to check that this doesn't already exist first
-    return micropub.create(this.mf2);
-  }
-
-  deleteLocal() {
-    if (this.browser.id) {
-      return browser.bookmarks.remove(this.browser.id);
+      if (existingFolder) {
+        // Folder exists, create the next level
+        return existingFolder.id;
+      } else {
+        // Folder doesn't exist so let's create it
+        const res = await browser.bookmarks.create(newFolder);
+        existingFolders.push(res);
+        return res.id;
+      }
     }
-    return Promise.resolve();
+
+    const createFolders = async folders => {
+      let parentId = null;
+      for (const folder of folders) {
+        parentId = await createFolder(folder, parentId);
+      }
+      this.browser.parentId = parentId;
+    };
+
+    createFolders(folders);
   }
 
-  deleteMicropub() {
+  async createLocal() {
+    await this.createLocalFolder();
+    let browserBookmark = this.browser;
+    delete browserBookmark.folder;
+    return await browser.bookmarks.create(browserBookmark);
+  }
+
+  async createMicropub() {
+    // TODO: Would like to check that this doesn't already exist first
+    return await micropub.create(this.mf2);
+  }
+
+  async deleteLocal() {
+    if (this.browser.id) {
+      return await browser.bookmarks.remove(this.browser.id);
+    }
+    return null;
+  }
+
+  async deleteMicropub() {
     if (this.mf2.properties.url && this.mf2.properties.url[0]) {
-      return micropub.delete(this.mf2.properties.url[0]);
+      return await micropub.delete(this.mf2.properties.url[0]);
     } else {
-      return Promise.reject("Missing the permalink for the online bookmark");
+      throw new Error("Missing the permalink for the online bookmark");
     }
   }
 }
 
-export const getLocalFolders = () =>
-  new Promise((resolve, reject) => {
-    browser.bookmarks.getTree().then(tree => {
-      let folders = [];
-      const flatten = (items, parentName = null) => {
-        items.filter(item => item.children).forEach(folder => {
-          if (
-            parentName &&
-            defaultFolders.indexOf(parentName.toLowerCase()) === -1
-          ) {
-            // Sub folder
-            folder.title = parentName + "/" + folder.title;
-          }
-          folders.push(folder.title);
-          flatten(folder.children, folder.title);
-        });
-      };
-      flatten(tree);
-      resolve(folders);
-    });
-  });
-
-export const getLocal = () =>
-  new Promise((resolve, reject) => {
-    browser.bookmarks.getTree().then(tree => {
-      let bookmarks = [];
-      const flatten = (items, folder = null) => {
-        items.forEach(item => {
-          if (folder) {
-            item.folder = folder;
-          }
-          if (item.children) {
-            // This is a folder
-            if (folder && defaultFolders.indexOf(folder.toLowerCase()) === -1) {
-              // Sub folder
-              item.title = folder + "/" + item.title;
-            }
-            flatten(item.children, item.title);
-            delete item.children;
-          } else {
-            bookmarks.push(new Bookmark(item));
-          }
-        });
-      };
-      flatten(tree);
-      resolve(bookmarks);
-    });
-  });
-
-export const getOnline = () =>
-  new Promise((resolve, reject) => {
-    const query = "source&post-type=bookmark&limit=9999";
-    const url = `${micropub.options.micropubEndpoint}?q=${query}`;
-
-    const request = {
-      method: "GET",
-      credentials: "omit",
-      headers: {
-        Authorization: "Bearer " + micropub.options.token,
-        "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
-        Accept: "application/json"
+export const getLocalFolders = async () => {
+  const tree = await browser.bookmarks.getTree();
+  let folders = [];
+  const flatten = (items, parentName = null) => {
+    items.filter(item => item.children).forEach(folder => {
+      if (
+        parentName &&
+        defaultFolders.indexOf(parentName.toLowerCase()) === -1
+      ) {
+        // Sub folder
+        folder.title = parentName + "/" + folder.title;
       }
-    };
+      folders.push(folder.title);
+      flatten(folder.children, folder.title);
+    });
+  };
+  flatten(tree);
+  return folders;
+};
 
-    fetch(url, request)
-      .then(res => {
-        if (!res.ok) {
-          console.log(
-            "Error querying micropub bookmarks, probably because the query is not supported"
-          );
-          return resolve([]);
+export const getLocal = async () => {
+  const tree = browser.bookmarks.getTree();
+  let bookmarks = [];
+  const flatten = (items, folder = null) => {
+    items.forEach(item => {
+      if (folder) {
+        item.folder = folder;
+      }
+      if (item.children) {
+        // This is a folder
+        if (folder && defaultFolders.indexOf(folder.toLowerCase()) === -1) {
+          // Sub folder
+          item.title = folder + "/" + item.title;
         }
-        return res.json();
-      })
-      .then(data => resolve(data.items.map(data => new Bookmark(data))))
-      .catch(err => {
-        console.log(
-          "Error querying micropub bookmarks, probably because the query is not supported",
-          err
-        );
-        resolve([]);
-      });
-  });
+        flatten(item.children, item.title);
+        delete item.children;
+      } else {
+        bookmarks.push(new Bookmark(item));
+      }
+    });
+  };
+  flatten(tree);
+  return bookmarks;
+};
+
+export const getOnline = async () => {
+  const query = "source&post-type=bookmark&limit=9999";
+  const url = `${micropub.options.micropubEndpoint}?q=${query}`;
+
+  const request = {
+    method: "GET",
+    credentials: "omit",
+    headers: {
+      Authorization: "Bearer " + micropub.options.token,
+      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8",
+      Accept: "application/json"
+    }
+  };
+
+  const res = await fetch(url, request);
+  if (!res.ok) {
+    console.log(
+      "Error querying micropub bookmarks, probably because the query is not supported"
+    );
+    return [];
+  }
+  const data = await res.json();
+  return data.items.map(data => new Bookmark(data));
+  // .catch(err => {
+  //   console.log(
+  //     "Error querying micropub bookmarks, probably because the query is not supported",
+  //     err
+  //   );
+  //   resolve([]);
+  // });
+};
 
 // NOTE: This deletes all online bookmarks, should probably never be used except for testing
-export const deleteAllMicropub = () =>
-  new Promise((resolve, reject) => {
-    console.log("Deleting all online bookmarks");
-    getOnline()
-      .then(browserBookmarks => {
-        browserBookmarks.forEach(bookmark => {
-          bookmark
-            .deleteMicropub()
-            .then(res => console.log("Deleted bookmark", res))
-            .catch(err => console.log("Error deleting bookmark", err));
-        });
-        resolve();
-      })
-      .catch(err => console.log("error or somthing", err));
-  });
+export const deleteAllMicropub = async () => {
+  console.log("Deleting all online bookmarks");
+  const browserBookmarks = await getOnline();
+  for (const bookmark of browserBookmarks) {
+    bookmark
+      .deleteMicropub()
+      .then(res => console.log("Deleted bookmark", res))
+      .catch(err => console.log("Error deleting bookmark", err));
+  }
+};
 
-export const sync = () =>
-  new Promise((resolve, reject) => {
-    let browserBookmarks = [];
-    console.log("Beginning bookmark sync");
-    getLocal()
-      .then(bookmarks => {
-        browserBookmarks = bookmarks;
-        return getOnline();
-      })
-      .then(onlineBookmarks => {
-        async function makeOnlineBookmarks(browserBookmarks, onlineBookmark) {
-          for (const browserBookmark of browserBookmarks) {
-            // Search to see if this bookmark exists on the site
-            const onlineBookmark = onlineBookmarks.find(
-              bookmark => bookmark.browser.url == browserBookmark.browser.url
-            );
-            if (onlineBookmark) {
-              // There is a bookmark online, so check if the categories or title should be updated
-              if (
-                onlineBookmark.browser.title != browserBookmark.browser.title ||
-                onlineBookmark.browser.folder.trim().toLowerCase() !=
-                  browserBookmark.browser.folder.trim().toLowerCase()
-              ) {
-                console.log(
-                  "Online bookmark exists but the title or folder is incorrect: " +
-                    onlineBookmark.browser.url
-                );
-                onlineBookmark
-                  .deleteLocal()
-                  .then(onlineBookmark.createLocal)
-                  .then(() =>
-                    console.log(
-                      "recreated the local bookmark from an update on your site"
-                    )
-                  )
-                  .catch(err =>
-                    console.log("Error recreating local bookmark", err)
-                  );
-              }
-            } else {
-              // There is no bookmark online so create it
-              console.log("Creating online bookmark", browserBookmark.mf2);
-              try {
-                const url = await browserBookmark.createMicropub();
-                console.log("Micropub bookmark created", url);
-              } catch (err) {
-                console.log("error creating online bookmark", err);
-              }
-            }
-          }
-          console.log("Created online bookmarks");
-        }
+export const sync = async () => {
+  console.log("Beginning bookmark sync");
+  let browserBookmarks = await getLocal();
+  let onlineBookmarks = await getOnline();
 
-        async function makeLocalBookmarks(onlineBookmarks) {
-          for (const onlineBookmark of onlineBookmarks) {
-            const browserBookmark = browserBookmarks.find(
-              bookmark => onlineBookmark.browser.url == bookmark.browser.url
-            );
-            if (!browserBookmark) {
-              console.log("Creating local bookmark", onlineBookmark.browser);
-              await onlineBookmark.createLocal();
-            }
-          }
-          console.log("Created local bookmarks");
+  async function makeOnlineBookmarks(browserBookmarks, onlineBookmark) {
+    for (const browserBookmark of browserBookmarks) {
+      // Search to see if this bookmark exists on the site
+      const onlineBookmark = onlineBookmarks.find(
+        bookmark => bookmark.browser.url == browserBookmark.browser.url
+      );
+      if (onlineBookmark) {
+        // There is a bookmark online, so check if the categories or title should be updated
+        if (
+          onlineBookmark.browser.title != browserBookmark.browser.title ||
+          onlineBookmark.browser.folder.trim().toLowerCase() !=
+            browserBookmark.browser.folder.trim().toLowerCase()
+        ) {
+          console.log(
+            "Online bookmark exists but the title or folder is incorrect: " +
+              onlineBookmark.browser.url
+          );
+          await onlineBookmark.deleteLocal();
+          await onlineBookmark.createLocal();
+          console.log(
+            "recreated the local bookmark from an update on your site"
+          );
         }
+      } else {
+        // There is no bookmark online so create it
+        console.log("Creating online bookmark", browserBookmark.mf2);
+        try {
+          const url = await browserBookmark.createMicropub();
+          console.log("Micropub bookmark created", url);
+        } catch (err) {
+          console.log("error creating online bookmark", err);
+        }
+      }
+    }
+    console.log("Created online bookmarks");
+  }
 
-        async function makeBookmarks(onlineBookmarks, browserBookmarks) {
-          await makeOnlineBookmarks(browserBookmarks, onlineBookmarks);
-          await makeLocalBookmarks(onlineBookmarks);
-          console.log("Syncing complete");
-          resolve();
-        }
-        makeBookmarks(onlineBookmarks, browserBookmarks);
-      });
-  });
+  async function makeLocalBookmarks(onlineBookmarks) {
+    for (const onlineBookmark of onlineBookmarks) {
+      const browserBookmark = browserBookmarks.find(
+        bookmark => onlineBookmark.browser.url == bookmark.browser.url
+      );
+      if (!browserBookmark) {
+        console.log("Creating local bookmark", onlineBookmark.browser);
+        await onlineBookmark.createLocal();
+      }
+    }
+    console.log("Created local bookmarks");
+  }
+
+  await makeOnlineBookmarks(browserBookmarks, onlineBookmarks);
+  await makeLocalBookmarks(onlineBookmarks);
+  console.log("Syncing complete");
+};
