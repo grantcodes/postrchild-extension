@@ -1,6 +1,3 @@
-import "medium-editor/dist/css/medium-editor.min.css";
-import "medium-editor/dist/css/themes/default.min.css";
-
 import browser from "webextension-polyfill";
 import micropub from "./modules/micropub";
 
@@ -60,12 +57,19 @@ const createOnPageContainer = () => {
   return onPageContainer;
 };
 
-// Get MF2 data for the current page
+// Respond to browser api messages
 browser.runtime.onMessage.addListener((request, sender) => {
   switch (request.action) {
-    case "getEntryCount":
+    case "discoverPageAction":
+      const templateEl = document.getElementsByClassName("postrchild-template");
+      if (templateEl.length > 0) {
+        return Promise.resolve({ action: "new" });
+      }
       const hEntries = document.getElementsByClassName("h-entry");
-      return Promise.resolve({ count: hEntries.length });
+      if (hEntries.length === 1) {
+        return Promise.resolve({ action: "edit" });
+      }
+      return Promise.resolve({ action: "new" });
       break;
     case "showEditor":
       // Inject editor onto page
@@ -87,7 +91,7 @@ browser.runtime.onMessage.addListener((request, sender) => {
           const hEntries = document.getElementsByClassName("h-entry");
           render(
             <Theme>
-              <NewPost firstPost={hEntries[0]} template={template} />
+              <NewPost template={template} />
             </Theme>,
             newPostContainer
           );

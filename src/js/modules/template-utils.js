@@ -109,14 +109,38 @@ export const getTitleEl = template => {
 };
 
 export const getNewPostTemplate = async () => {
+  let hasStoredTemplate = false;
   let template = await browser.storage.local.get("setting_newPostTemplate");
   if (template && template.setting_newPostTemplate) {
+    hasStoredTemplate = true;
     let tmpTemplate = document.createElement("div");
     tmpTemplate.innerHTML = template.setting_newPostTemplate.trim();
     template = tmpTemplate;
   } else {
     // Create a template based off the last post.
     template = sanitizeTemplate(document.getElementsByClassName("h-entry")[0]);
+  }
+  const onPageTemplate = document.getElementsByClassName("postrchild-template");
+  if (onPageTemplate.length > 0) {
+    // There is a template on this page, use it or replace it with the browser template
+    if (!hasStoredTemplate) {
+      template = sanitizeTemplate(onPageTemplate[0]);
+    }
+    onPageTemplate[0].replaceWith(template);
+  } else {
+    // Need to add the template to an appropriate place
+    const hEntries = document.getElementsByClassName("h-entry");
+    const hFeed = document.getElementsByClassName("h-feed");
+    const main = document.getElementsByTagName("main");
+    if (hEntries && hEntries.length) {
+      hEntries[0].parentElement.insertBefore(template, hEntries[0]);
+    } else if (hFeed && hFeed.length) {
+      hFeed.prepend(template);
+    } else if (main && main.length) {
+      main.prepend(template);
+    } else {
+      document.body.prepend(template);
+    }
   }
   return template;
 };

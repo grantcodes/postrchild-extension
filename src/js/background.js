@@ -110,8 +110,6 @@ browser.bookmarks.onMoved.addListener((id, bookmark) => {
     .catch(() => {});
 });
 
-// TODO: May need to watch for headers from the micropub & media endpoint with `browser.webRequest.onHeadersReceived` because they cannot be read by default.
-
 // Listen for messages.
 browser.runtime.onMessage.addListener((request, sender) => {
   switch (request.action) {
@@ -136,21 +134,26 @@ async function initializePageAction(tab) {
       const me = store.setting_micropubMe;
       if (tab.url.indexOf(me) === 0) {
         const res = await browser.tabs.sendMessage(tab.id, {
-          action: "getEntryCount"
+          action: "discoverPageAction"
         });
-        if (res && res.count) {
-          console.log("Showing the page action", tab.url);
+        if (res && res.action) {
           browser.pageAction.show(tab.id);
-        }
-        if (res && res.count === 1) {
-          browser.pageAction.setTitle({
-            tabId: tab.id,
-            title: "Edit Post"
-          });
-        } else if (res && res.count > 1) {
-          browser.pageAction.setTitle({ tabId: tab.id, title: "New Post" });
+          if (res.action === "edit") {
+            browser.pageAction.setTitle({
+              tabId: tab.id,
+              title: "Edit Post"
+            });
+          } else if (res.action === "new") {
+            browser.pageAction.setTitle({ tabId: tab.id, title: "New Post" });
+          }
         }
       }
+    } else {
+      browser.pageAction.show(tab.tabId);
+      browser.pageAction.setTitle({
+        tabId: tab.id,
+        title: "Login"
+      });
     }
   } catch (err) {
     console.log("Error initializing page action", err);
@@ -171,12 +174,16 @@ browser.tabs.onUpdated.addListener((id, changeInfo, tab) => {
 
 // Watches for a click on the page action button and either loads the new post creator or editor
 browser.pageAction.onClicked.addListener(async tab => {
-  const res = await browser.tabs.sendMessage(tab.id, {
-    action: "getEntryCount"
-  });
-  if (res && res.count === 1) {
-    browser.tabs.sendMessage(tab.id, { action: "showEditor" });
-  } else if (res && res.count > 1) {
-    browser.tabs.sendMessage(tab.id, { action: "showNewPost" });
+  const actionTitle = await browser.pageAction.getTitle({ tabId: tab.id });
+  switch (actionTitle) {
+    case "Edit Post":
+      browser.tabs.sendMessage(tab.id, { action: "showEditor" });
+      break;
+    case "New Post":
+      browser.tabs.sendMessage(tab.id, { action: "showNewPost" });
+      break;
+    default:
+      browser.runtime.openOptionsPage();
+      break;
   }
 });

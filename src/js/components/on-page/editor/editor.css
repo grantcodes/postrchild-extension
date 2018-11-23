@@ -1,0 +1,10 @@
+.postrchild-editor {
+  display: block;
+  min-height: 1.5em;
+  cursor: text;
+}
+
+.postrchild-editor .public-DraftEditorPlaceholder-root {
+  position: absolute;
+  opacity: 0.7;
+}

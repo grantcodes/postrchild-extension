@@ -1,8 +1,9 @@
 import React from "react";
+import { render } from "react-dom";
 import { Group, Button } from "rebass";
 import Popout from "./popout";
 import PopoutForm from "./popout-form";
-import MediumEditor from "medium-editor";
+import Editor from "./editor";
 import micropub from "../../modules/micropub";
 import * as templateUtils from "../../modules/template-utils";
 
@@ -11,8 +12,8 @@ class PostEditor extends React.Component {
     super(props);
     this.state = {
       popoutOpen: false,
-      titleEditor: false,
-      contentEditor: false,
+      title: "",
+      content: "",
       mf2: {
         properties: {}
       },
@@ -29,14 +30,7 @@ class PostEditor extends React.Component {
   }
 
   handleCancel() {
-    let titleEditor = this.state.titleEditor;
-    let contentEditor = this.state.contentEditor;
-    if (titleEditor) {
-      titleEditor.destroy();
-    }
-    if (contentEditor) {
-      contentEditor.destroy();
-    }
+    // TODO: Need to disable editor or something
     document.getElementById("postrchild-extension-app-container").remove();
   }
 
@@ -54,11 +48,8 @@ class PostEditor extends React.Component {
 
   async handleSubmit() {
     let mf2 = this.state.mf2;
-    let titleEditor = this.state.titleEditor;
-    let contentEditor = this.state.contentEditor;
-
-    const title = titleEditor ? titleEditor.origElements.innerText : null; // This method makes sure we get a string
-    const content = contentEditor ? contentEditor.getContent() : null;
+    const title = this.state.title;
+    const content = this.state.content;
     if (title) {
       mf2.properties.name = [title];
     }
@@ -112,8 +103,6 @@ class PostEditor extends React.Component {
     const postEl = this.props.post;
     let contentEl = templateUtils.getContentEl(postEl);
     let titleEl = templateUtils.getTitleEl(postEl);
-    let titleEditor = this.state.titleEditor;
-    let contentEditor = this.state.contentEditor;
     if (!contentEl) {
       alert("Error finding your content to edit.");
     }
@@ -125,44 +114,45 @@ class PostEditor extends React.Component {
           originalProperties: Object.assign({}, post.properties)
         });
       }
+      let title = titleEl.innerText || "";
       if (post.properties && post.properties.name && post.properties.name[0]) {
-        titleEl.innerText = post.properties.name[0];
+        title = post.properties.name[0];
       }
+
+      let content = contentEl.innerHTML || "";
       if (
         post.properties &&
         post.properties.content &&
         post.properties.content[0]
       ) {
-        const content = post.properties.content[0];
-        if (typeof content == "object" && content.html) {
-          contentEl.innerHTML = content.html;
-        } else if (typeof content == "string") {
-          contentEl.innerText = content;
+        let content = post.properties.content[0];
+        if (typeof content == "object" && (content.html || content.value)) {
+          content = content.html || content.value;
         }
       }
+
+      render(
+        <Editor
+          value={title}
+          placeholder="Title..."
+          rich={false}
+          onChange={title => this.setState({ title })}
+        />,
+        titleEl
+      );
+      render(
+        <Editor
+          value={content}
+          onChange={content => this.setState({ content })}
+        />,
+        contentEl
+      );
     } catch (err) {
       console.log("Query error", err);
       alert(
         "Error running query source on your post, you can still edit the post, but it might might be missing something if this page hides some content or something like that"
       );
     }
-    contentEditor = new MediumEditor(contentEl, {
-      placeholder: {
-        text: "Insert post content here"
-      }
-    });
-    titleEditor = new MediumEditor(titleEl, {
-      toolbar: false,
-      placeholder: {
-        text: "Title"
-      }
-    });
-    this.setState({
-      titleEditor,
-      contentEditor
-    });
-    // editor.subscribe("editableInput", (event, editable) => {
-    // });
   }
 
   render() {

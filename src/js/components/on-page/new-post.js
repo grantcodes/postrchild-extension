@@ -1,19 +1,20 @@
 import browser from "webextension-polyfill";
 import React from "react";
+import { render } from "react-dom";
 import { Group, Button } from "rebass";
 import Popout from "./popout";
 import PopoutForm from "./popout-form";
-import MediumEditor from "medium-editor";
 import micropub from "../../modules/micropub";
 import * as templateUtils from "../../modules/template-utils";
+import Editor from "./editor";
 
 class PostCreator extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       popoutOpen: false,
-      titleEditor: false,
-      contentEditor: false,
+      title: "",
+      content: "",
       mf2: {
         type: "h-entry",
         properties: {}
@@ -51,20 +52,30 @@ class PostCreator extends React.Component {
   }
 
   async handleOpen() {
-    let titleEditor = this.state.titleEditor;
-    let contentEditor = this.state.contentEditor;
     const templateEl = this.props.template;
     let contentEl = templateUtils.getContentEl(templateEl);
     let titleEl = templateUtils.getTitleEl(templateEl);
 
     if (contentEl) {
       contentEl.innerHTML = "";
+      render(
+        <Editor onChange={content => this.setState({ content })} />,
+        contentEl
+      );
     } else {
       alert("Error getting the content container");
     }
 
     if (titleEl) {
       titleEl.innerHTML = "";
+      render(
+        <Editor
+          onChange={title => this.setState({ title })}
+          placeholder="Title..."
+          rich={false}
+        />,
+        titleEl
+      );
     }
 
     // Photo upload
@@ -115,40 +126,11 @@ class PostCreator extends React.Component {
         }
       });
     }
-
-    this.props.firstPost.parentElement.insertBefore(
-      templateEl,
-      this.props.firstPost
-    );
-
-    contentEditor = new MediumEditor(contentEl, {
-      placeholder: {
-        text: "Insert post content here"
-      }
-    });
-    titleEditor = new MediumEditor(titleEl, {
-      toolbar: false,
-      placeholder: {
-        text: "Title"
-      }
-    });
-
-    this.setState({ titleEditor, contentEditor });
   }
 
   async handleSubmit() {
     try {
-      let contentEditor = this.state.contentEditor;
-      let titleEditor = this.state.titleEditor;
-      const content = contentEditor.getContent();
-      const title = titleEditor.getContent();
-      if (titleEditor) {
-        titleEditor.destroy();
-      }
-      if (contentEditor) {
-        contentEditor.destroy();
-      }
-
+      const { title, content } = this.state;
       let mf2 = this.state.mf2;
 
       if (title) {
@@ -160,7 +142,6 @@ class PostCreator extends React.Component {
       }
 
       const url = await micropub.create(mf2);
-      this.setState({ titleEditor: null, contentEditor: null });
       if (typeof url == "string") {
         // Sometimes chrome returns a string on success?
         window.location.href = url;
