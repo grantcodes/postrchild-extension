@@ -18,7 +18,7 @@ class PostCreator extends Component {
       title: '',
       content: '',
       mf2: {
-        type: 'h-entry',
+        type: ['h-entry'],
         properties: {},
       },
     }
