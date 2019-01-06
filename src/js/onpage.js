@@ -24,18 +24,16 @@ const createOnPageContainer = () => {
   return onPageContainer
 }
 
-const loadNew = () => {
+const loadNew = async () => {
   const newPostContainer = createOnPageContainer()
   if (newPostContainer) {
-    getNewPostTemplate().then(template => {
-      const hEntries = document.getElementsByClassName('h-entry')
-      render(
-        <Theme>
-          <NewPost template={template} />
-        </Theme>,
-        newPostContainer
-      )
-    })
+    const template = await getNewPostTemplate()
+    render(
+      <Theme>
+        <NewPost template={template} />
+      </Theme>,
+      newPostContainer
+    )
   }
 }
 
