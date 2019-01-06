@@ -109,8 +109,8 @@ const init = async () => {
       if (code && state && state == micropub.options.state) {
         const token = await micropub.getToken(code)
         await browser.storage.local.set({ setting_micropubToken: token })
-        // TODO: Call to background js to close tab and send notification
-        alert('PostrChild Extension all set up. You may close this tab')
+        alert("Ok you're all set up. Visit your website to start posting")
+        await browser.runtime.sendMessage({ action: 'closeTab' })
       }
     } catch (err) {
       console.log('Error getting access token', err)

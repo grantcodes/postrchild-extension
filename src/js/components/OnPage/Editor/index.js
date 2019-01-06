@@ -58,9 +58,10 @@ class PostrChildEditor extends Component {
    */
   updateMenuPosition = () => {
     const { value } = this.state
+    const { rich } = this.props
     const { fragment, selection } = value
-    // TODO: Check selection is actually inside current editor, as will still show the menu when selecting the title
-    hasSelection = !(selection.isCollapsed || fragment.text === '')
+    // TODO: Instead of checking if rich, should check if is the actual current editor
+    hasSelection = !(selection.isCollapsed || fragment.text === '') && rich
 
     const native = window.getSelection()
     if (!native || !native.getRangeAt) {

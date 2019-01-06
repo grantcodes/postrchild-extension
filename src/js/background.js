@@ -94,11 +94,13 @@ browser.bookmarks.onMoved.addListener(async (id, bookmark) => {
 })
 
 // Listen for messages.
-browser.runtime.onMessage.addListener((request, sender) => {
+browser.runtime.onMessage.addListener(async (request, sender) => {
   switch (request.action) {
     case 'getSettings': {
       return browser.storage.local.get()
-      break
+    }
+    case 'closeTab': {
+      browser.tabs.remove(sender.tab.id)
     }
     default: {
       break
