@@ -34,15 +34,17 @@ First you will need to go into the options of the extension and provide your dom
 
 After that when you browse to your own website you should see a button to add a new post, or if you are viewing a single post, a button to edit that post.
 
-At the moment the editor only supports `name` and `content` properties.
-
 ### New Post Template
+
+There are a number of options to add a new post template.
+
+My personal favorite is to create a special new post page that you can visit on your site to autoload the editor. You probably want to no-index the page, but it doesn't need to be secure as the editor is only loaded in your browser, other people cannot post to your website. The template should follow the same rules as below but also add the `postrchild-template` classname to the `h-entry` and the extension will automatically load the new post editor on your site if you are logged in.
 
 When creating a new inline post for you to edit, the extension tries to grab the first post on the page and use that as a template. But this can lead to some visual formatting issues.
 
 So you have the option to include a "New Post Template" which will be injected and editor fields will be loaded into it.
 
-It should have a `h` tag with a `p-name` class and an empty element with a class of `e-content`.
+It should have a container with a `h-entry` class, with a `p-name` class element and another element with a class of `e-content`.
 
 For example I use something like this for my own site:
 
@@ -55,3 +57,9 @@ For example I use something like this for my own site:
   <footer class=" post__footer">Being written now by Grant Richmond</footer>
 </article>
 ```
+
+### Alignment
+
+You can align certain items to a wide or full width if your website supports the styles.
+
+You need to style the `alignfull` and `alignwide` classes. This should be built into WordPress themes with full gutenberg support.
