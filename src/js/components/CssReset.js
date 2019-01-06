@@ -1,10 +1,10 @@
-import React from "react";
-import defaultTheme from "rebass/src/theme";
+import React from 'react'
+import defaultTheme from 'rebass/src/theme'
 
 const CssReset = props => {
-  let theme = defaultTheme;
+  let theme = defaultTheme
   if (props && props.theme) {
-    theme = Object.assign({}, theme, props.theme);
+    theme = Object.assign({}, theme, props.theme)
   }
   return (
     <style>
@@ -57,7 +57,7 @@ const CssReset = props => {
         }
       `}
     </style>
-  );
-};
+  )
+}
 
-export default CssReset;
+export default CssReset

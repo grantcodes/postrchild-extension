@@ -1,10 +1,10 @@
-import React, { Component, Fragment } from "react";
-import { hot } from "react-hot-loader";
-import { Box } from "rebass";
-import Header from "./header";
-import Tabs, { TabPane } from "./popup-tabs";
-import Settings from "./settings";
-import Theme from "./theme";
+import React, { Component } from 'react'
+import { hot } from 'react-hot-loader'
+import { Box } from 'rebass'
+import Header from './Header'
+import Tabs, { TabPane } from './PopupTabs'
+import Settings from './Settings'
+import Theme from './Theme'
 
 class Popup extends Component {
   render() {
@@ -19,8 +19,8 @@ class Popup extends Component {
           </Tabs>
         </Box>
       </Theme>
-    );
+    )
   }
 }
 
-export default hot(module)(Popup);
+export default hot(module)(Popup)

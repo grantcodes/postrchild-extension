@@ -1,110 +1,110 @@
-import browser from "webextension-polyfill";
-import React, { Component, Fragment } from "react";
-import { Button, Label, Input, Textarea, Switch, Small, Divider } from "rebass";
-import micropub from "../modules/micropub";
-import { sync as syncBookmarks } from "../modules/bookmarks";
+import browser from 'webextension-polyfill'
+import React, { Component, Fragment } from 'react'
+import { Button, Label, Input, Textarea, Switch, Small, Divider } from 'rebass'
+import micropub from '../modules/micropub'
+import { sync as syncBookmarks } from '../modules/bookmarks'
 
 class Settings extends Component {
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
-      micropubMe: "",
-      micropubToken: "",
-      micropubEndpoint: "",
-      newPostTemplate: "",
+      micropubMe: '',
+      micropubToken: '',
+      micropubEndpoint: '',
+      newPostTemplate: '',
       bookmarkAutoSync: false,
       bookmarksSyncing: false
-    };
+    }
 
-    this.handleLogin = this.handleLogin.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSyncBookmarks = this.handleSyncBookmarks.bind(this);
-    this.renderBasicItem = this.renderBasicItem.bind(this);
+    this.handleLogin = this.handleLogin.bind(this)
+    this.handleChange = this.handleChange.bind(this)
+    this.handleSyncBookmarks = this.handleSyncBookmarks.bind(this)
+    this.renderBasicItem = this.renderBasicItem.bind(this)
   }
 
   async componentDidMount() {
     // Get local settings
-    const store = await browser.storage.local.get();
+    const store = await browser.storage.local.get()
     this.setState({
       micropubMe: store.setting_micropubMe,
       micropubToken: store.setting_micropubToken,
       micropubEndpoint: store.setting_micropubEndpoint,
       newPostTemplate: store.setting_newPostTemplate,
       bookmarkAutoSync: store.setting_bookmarkAutoSync ? true : false
-    });
+    })
 
     browser.runtime.onMessage.addListener((request, sender) => {
       switch (request.action) {
-        case "isSyncing": {
-          return Promise.resolve(this.state.bookmarksSyncing);
-          break;
+        case 'isSyncing': {
+          return Promise.resolve(this.state.bookmarksSyncing)
+          break
         }
         default: {
-          break;
+          break
         }
       }
-    });
+    })
   }
 
   async handleLogin(e) {
-    e.preventDefault();
+    e.preventDefault()
     try {
-      micropub.options.me = this.state.micropubMe;
-      const url = await micropub.getAuthUrl();
+      micropub.options.me = this.state.micropubMe
+      const url = await micropub.getAuthUrl()
       await browser.storage.local.set({
         setting_tokenEndpoint: micropub.options.tokenEndpoint,
         setting_micropubEndpoint: micropub.options.micropubEndpoint
-      });
-      await browser.tabs.create({ url });
+      })
+      await browser.tabs.create({ url })
     } catch (err) {
-      console.log("Error creating login tab", err);
+      console.log('Error creating login tab', err)
     }
   }
 
   async handleSyncBookmarks(e) {
-    e.preventDefault();
-    this.setState({ bookmarksSyncing: true });
+    e.preventDefault()
+    this.setState({ bookmarksSyncing: true })
     // Do the callback on a timeout to allow the background script time to check if the sync is happening
     try {
-      await syncBookmarks();
+      await syncBookmarks()
     } catch (err) {
-      console.log("Error syncing bookmarks", err);
+      console.log('Error syncing bookmarks', err)
     }
-    setTimeout(() => this.setState({ bookmarksSyncing: false }), 500);
+    setTimeout(() => this.setState({ bookmarksSyncing: false }), 500)
   }
 
   handleChange(name) {
     return e => {
-      let update = {};
-      update["setting_" + name] = e.target.value;
-      browser.storage.local.set(update);
-      this.setState({ [name]: e.target.value });
-    };
+      let update = {}
+      update['setting_' + name] = e.target.value
+      browser.storage.local.set(update)
+      this.setState({ [name]: e.target.value })
+    }
   }
 
   renderBasicItem(key, label) {
     return (
       <Fragment>
-        <Label htmlFor={"setting" + key}>{label}</Label>
+        <Label htmlFor={'setting' + key}>{label}</Label>
         <Input
           mb={3}
           type="text"
           value={this.state[key]}
-          id={"setting" + key}
+          id={'setting' + key}
           onChange={this.handleChange(key)}
         />
       </Fragment>
-    );
+    )
   }
 
   render() {
     return (
       <form>
-        {this.renderBasicItem("micropubMe", "Domain")}
+        {this.renderBasicItem('micropubMe', 'Domain')}
         {this.state.micropubToken ? (
           <Fragment>
-            {this.renderBasicItem("micropubEndpoint", "Micropub endpoint")}
-            {this.renderBasicItem("micropubToken", "Micropub token")}
+            {this.renderBasicItem('micropubEndpoint', 'Micropub endpoint')}
+            {this.renderBasicItem('micropubToken', 'Micropub token')}
           </Fragment>
         ) : (
           <Button
@@ -116,14 +116,14 @@ class Settings extends Component {
           </Button>
         )}
 
-        <Label htmlFor={"newPostTemplate"}>New Post Template</Label>
+        <Label htmlFor={'newPostTemplate'}>New Post Template</Label>
         <Textarea
           mb={3}
-          style={{ resize: "vertical" }}
+          style={{ resize: 'vertical' }}
           rows={10}
           value={this.state.newPostTemplate}
-          id={"newPostTemplate"}
-          onChange={this.handleChange("newPostTemplate")}
+          id={'newPostTemplate'}
+          onChange={this.handleChange('newPostTemplate')}
         />
         <Small>
           Here you can write blank html code for how posts are displayed on your
@@ -141,18 +141,18 @@ class Settings extends Component {
             onClick={e => {
               let update = {
                 setting_bookmarkAutoSync: !this.state.bookmarkAutoSync
-              };
-              browser.storage.local.set(update);
-              this.setState({ bookmarkAutoSync: !this.state.bookmarkAutoSync });
+              }
+              browser.storage.local.set(update)
+              this.setState({ bookmarkAutoSync: !this.state.bookmarkAutoSync })
             }}
-          />{" "}
+          />{' '}
           Enable Bookmark Auto Posting
         </Label>
         <Button
           disabled={this.state.bookmarksSyncing}
           onClick={this.handleSyncBookmarks}
         >
-          {this.state.bookmarksSyncing ? "Syncing..." : "Sync Bookmarks"}
+          {this.state.bookmarksSyncing ? 'Syncing...' : 'Sync Bookmarks'}
         </Button>
         <br />
         <Small>
@@ -165,8 +165,8 @@ class Settings extends Component {
           bookmark
         </Small>
       </form>
-    );
+    )
   }
 }
 
-export default Settings;
+export default Settings
