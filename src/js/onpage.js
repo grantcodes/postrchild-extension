@@ -49,20 +49,33 @@ const loadEdit = () => {
   }
 }
 
+const isUserSite = () => {
+  if (!micropub.options.me) {
+    return false
+  }
+  const currentUrl = new URL(window.location.href)
+  const meUrl = new URL(micropub.options.me)
+  return currentUrl.hostname === meUrl.hostname
+}
+
 // Respond to browser api messages
 browser.runtime.onMessage.addListener((request, sender) => {
   switch (request.action) {
     case 'discoverPageAction':
-      const templateEl = document.getElementsByClassName('postrchild-template')
-      if (templateEl.length > 0) {
+      if (isUserSite()) {
+        const templateEl = document.getElementsByClassName(
+          'postrchild-template'
+        )
+        if (templateEl.length > 0) {
+          return Promise.resolve({ action: 'new' })
+        }
+        const hEntries = document.getElementsByClassName('h-entry')
+        if (hEntries.length === 1) {
+          return Promise.resolve({ action: 'edit' })
+        }
         return Promise.resolve({ action: 'new' })
       }
-      const hEntries = document.getElementsByClassName('h-entry')
-      if (hEntries.length === 1) {
-        return Promise.resolve({ action: 'edit' })
-      }
-      return Promise.resolve({ action: 'new' })
-      break
+      return Promise.resolve({ action: null })
     case 'showEditor':
       // Inject editor onto page
       loadEdit()
@@ -106,7 +119,7 @@ const init = async () => {
   }
   // Autoload new post if there is a template for it on the page
   const templateEl = document.getElementsByClassName('postrchild-template')
-  if (templateEl.length === 1) {
+  if (isUserSite() && templateEl.length === 1) {
     loadNew()
   }
 }
