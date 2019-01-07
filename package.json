@@ -17,6 +17,7 @@
     "qs": "^6.6.0",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
+    "react-icons": "^3.2.2",
     "react-transition-group": "^2.5.2",
     "rebass": "^2.3.4",
     "slate": "^0.44.9",

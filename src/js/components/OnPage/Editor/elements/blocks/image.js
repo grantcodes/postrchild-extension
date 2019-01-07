@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import { Button, Input, Label } from 'rebass'
-import Icon from '../../Toolbar/Icon'
+import { Button } from 'rebass'
+import { MdImage } from 'react-icons/md'
 import Overlay from '../../Toolbar/Overlay'
 import AlignmentButtons from '../../Toolbar/AlignmentButtons'
 import micropub from '../../../../../modules/micropub'
@@ -89,13 +89,7 @@ class Image extends Component {
 
 export default {
   name: 'image',
-  icon: (
-    <Icon size={24}>
-      <path d="M0,0h24v24H0V0z" fill="none" />
-      <path d="m19 5v14h-14v-14h14m0-2h-14c-1.1 0-2 0.9-2 2v14c0 1.1 0.9 2 2 2h14c1.1 0 2-0.9 2-2v-14c0-1.1-0.9-2-2-2z" />
-      <path d="m14.14 11.86l-3 3.87-2.14-2.59-3 3.86h12l-3.86-5.14z" />
-    </Icon>
-  ),
+  icon: <MdImage />,
   render: props => <Image {...props} />,
   serialize: (children, obj) => {
     return (

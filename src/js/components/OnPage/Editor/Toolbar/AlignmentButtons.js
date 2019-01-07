@@ -17,19 +17,28 @@ class AlignmentButtons extends Component {
           bg={alignment === 'none' ? 'blue' : 'black'}
           onMouseDown={this.handleClick('none')}
         >
-          <Icon path="M3 5h14V3H3v2zm12 8V7H5v6h10zM3 17h14v-2H3v2z" />
+          <Icon
+            size={24}
+            path="M5 3h14v3h-14v-3zM5 8h14v8h-14v-8zM5 18h14v3h-14v-3z"
+          />
         </Button>
         <Button
           bg={alignment === 'wide' ? 'blue' : 'black'}
           onMouseDown={this.handleClick('wide')}
         >
-          <Icon path="M5 5h10V3H5v2zm12 8V7H3v6h14zM5 17h10v-2H5v2z" />
+          <Icon
+            size={24}
+            path="M5 3h14v3h-14v-3zM3 8h18v8h-18v-8zM5 18h14v3h-14v-3z"
+          />
         </Button>
         <Button
           bg={alignment === 'full' ? 'blue' : 'black'}
           onMouseDown={this.handleClick('full')}
         >
-          <Icon path="M17 13V3H3v10h14zM5 17h10v-2H5v2z" />
+          <Icon
+            size={24}
+            path="M5 3h14v3h-14v-3zM0 8h24v8h-24v-8zM5 18h14v3h-14v-3z"
+          />
         </Button>
       </Fragment>
     )

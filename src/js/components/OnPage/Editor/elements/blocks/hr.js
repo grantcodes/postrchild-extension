@@ -3,7 +3,7 @@ import Icon from '../../Toolbar/Icon'
 
 export default {
   name: 'hr',
-  icon: null, // <Icon size={24} path="M19 13H5v-2h14v2z" />,
+  icon: null,
   render: ({ attributes, children }) => <hr {...attributes} />,
   serialize: children => <hr />,
   deserialize: el => ({

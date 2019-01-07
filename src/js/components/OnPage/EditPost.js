@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react'
 import { Group, Button } from 'rebass'
+import { MdClose, MdSettings, MdDelete } from 'react-icons/md'
 import Popout from './Popout'
 import PopoutForm from './PopoutForm'
 import EditorPortal from './EditorPortal'
@@ -172,17 +173,17 @@ class PostEditor extends Component {
             disabled={loading}
             title="Post Settings"
           >
-            ⚙️
+            <MdSettings />
           </Button>
           <Button onClick={this.handleDelete} title="Delete" disabled={loading}>
-            🗑️
+            <MdDelete />
           </Button>
           <Button
             onClick={() => window.location.reload()}
             title="Cancel"
             disabled={loading}
           >
-            ❌
+            <MdClose />
           </Button>
         </Group>
 

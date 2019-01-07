@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill'
 import React, { Component, Fragment } from 'react'
-import { createPortal } from 'react-dom'
 import { Group, Button } from 'rebass'
+import { MdClose, MdSettings } from "react-icons/md";
 import Popout from './Popout'
 import PopoutForm from './PopoutForm'
 import micropub, { uploadMf2FilesToMediaEndpoint } from '../../modules/micropub'
@@ -120,10 +120,10 @@ class PostCreator extends Component {
             title="Post options"
             disabled={loading}
           >
-            ⚙️
+            <MdSettings />
           </Button>
           <Button onClick={this.handleCancel} title="Cancel" disabled={loading}>
-            ❌
+            <MdClose />
           </Button>
         </Group>
         <Popout
@@ -151,12 +151,6 @@ class PostCreator extends Component {
               onChange={content => this.setState({ content })}
               autoFocus
             />
-            {/* {photoEl &&
-              micropub.options.mediaEndpoint &&
-              createPortal(
-                <input type="file" multiple style={{ display: 'block' }} />,
-                photoEl
-              )} */}
           </Fragment>
         )}
       </Fragment>
