@@ -1,17 +1,16 @@
 import React, { Component } from 'react'
 import { Button } from 'rebass'
-import { MdPhotoSizeSelectActual } from 'react-icons/md'
+import { MdMovie } from 'react-icons/md'
 import Overlay from '../../Toolbar/Overlay'
 import AlignmentButtons from '../../Toolbar/AlignmentButtons'
 import micropub from '../../../../../modules/micropub'
 
-class Image extends Component {
+class Video extends Component {
   constructor(props) {
     super(props)
     this.state = {
       uploading: true,
     }
-    // this.ref = React.createRef()
   }
 
   async componentDidMount() {
@@ -39,7 +38,11 @@ class Image extends Component {
 
     return isSelected ? (
       <div {...attributes} style={{ position: 'relative' }}>
-        <img {...data} {...attributes} style={{ opacity: loading ? 0.5 : 1 }} />
+        <video
+          {...data}
+          {...attributes}
+          style={{ opacity: loading ? 0.5 : 1 }}
+        />
         <Overlay>
           <AlignmentButtons
             alignment={(data.className || 'none').replace('align', '')}
@@ -48,42 +51,68 @@ class Image extends Component {
               editor.setNodeByKey(node.key, { data })
             }}
           />
+          {!data.poster ? (
+            <Button
+              onClick={e => {
+                e.preventDefault()
+                const el = document.createElement('input')
+                el.type = 'file'
+                el.accept = 'image/*'
+                el.click()
+                el.onchange = async e => {
+                  const file = el.files[0]
+                  if (!file) {
+                    return
+                  }
+                  try {
+                    const fileUrl = await micropub.postMedia(file)
+                    data.poster = fileUrl
+                    editor.setNodeByKey(node.key, { data })
+                  } catch (err) {
+                    alert('Error uploading file')
+                    console.log('Error uploading poster file', err)
+                  }
+                }
+              }}
+            >
+              Add Poster
+            </Button>
+          ) : (
+            <Button
+              onClick={e => {
+                data.poster = ''
+                editor.setNodeByKey(node.key, { data })
+              }}
+            >
+              Remove Poster
+            </Button>
+          )}
           <Button
             onClick={e => {
               e.preventDefault()
-              const alt = window.prompt('Enter alt text', data.alt)
-              if (alt) {
-                data.alt = alt
-                editor.setNodeByKey(node.key, { data })
-              }
+              data.controls = !data.controls
+              editor.setNodeByKey(node.key, { data })
             }}
           >
-            Alt
-            {/* <Input
-              type="text"
-              value={data.alt}
-              onChange={alt => {
-                data.alt = alt
-                editor.setNodeByKey(node.key, { data })
-              }}
-            /> */}
+            {data.controls ? 'Controls' : 'No Controls'}
           </Button>
         </Overlay>
       </div>
     ) : (
-      <img {...data} {...attributes} style={{ opacity: loading ? 0.5 : 1 }} />
+      <video {...data} {...attributes} style={{ opacity: loading ? 0.5 : 1 }} />
     )
   }
 }
 
 export default {
-  name: 'image',
-  icon: <MdPhotoSizeSelectActual />,
-  render: props => <Image {...props} />,
+  name: 'video',
+  icon: <MdMovie />,
+  render: props => <Video {...props} />,
   serialize: (children, obj) => {
     return (
-      <img
-        alt={obj.data.get('alt')}
+      <video
+        controls={obj.data.get('controls')}
+        poster={obj.data.get('poster')}
         src={obj.data.get('src')}
         className={obj.data.get('className')}
       />
@@ -91,27 +120,29 @@ export default {
   },
   deserialize: el => ({
     object: 'block',
-    type: 'image',
+    type: 'video',
     data: {
       className: el.getAttribute('class'),
       src: el.getAttribute('src'),
-      alt: el.getAttribute('alt'),
+      poster: el.getAttribute('poster'),
+      controls: el.getAttribute('controls'),
     },
   }),
   onButtonClick: editor => e => {
     e.preventDefault()
     const el = document.createElement('input')
     el.type = 'file'
-    el.accept = 'image/*'
+    el.accept = 'video/*'
     el.click()
     el.onchange = e => {
       for (const file of el.files) {
-        const imageBlock = {
-          type: 'image',
+        const videoBlock = {
+          type: 'video',
           data: {
             file,
-            alt: '',
+            poster: '',
             className: 'alignnone',
+            controls: true,
             src: URL.createObjectURL(file),
           },
         }
@@ -119,13 +150,12 @@ export default {
         const { value } = editor
         const { startBlock } = value
         if (startBlock.type === 'paragraph' && startBlock.text === '') {
-          editor.setBlocks(imageBlock)
+          editor.setBlocks(videoBlock)
         } else {
-          editor.moveToEndOfBlock().insertBlock(imageBlock)
+          editor.moveToEndOfBlock().insertBlock(videoBlock)
         }
         editor.insertBlock('paragraph')
       }
     }
   },
-  // nodes:
 }

@@ -2,8 +2,8 @@ import React from 'react'
 
 const buttonStyle = {
   display: 'block',
-  width: 24,
-  height: 24,
+  width: 20,
+  height: 20,
   fontSize: 16,
   letterSpacing: 0,
   lineHeight: 24 / 16,

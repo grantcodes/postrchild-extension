@@ -12,19 +12,48 @@ import { marks, nodes, blocks, inlines } from './elements/index'
 
 const plugins = [
   InsertImages({
-    // extensions: ['png'],
-    insertImage: (change, file) => {
-      return change
-        .insertBlock({
-          type: 'image',
-          data: {
-            file,
-            alt: '',
-            className: 'alignnone',
-            src: URL.createObjectURL(file),
-          },
-        })
-        .insertBlock('paragraph')
+    insertImage: (editor, file) => {
+      if (file.type.startsWith('image/')) {
+        return editor
+          .insertBlock({
+            type: 'image',
+            data: {
+              file,
+              alt: '',
+              className: 'alignnone',
+              src: URL.createObjectURL(file),
+            },
+          })
+          .insertBlock('paragraph')
+      } else if (file.type.startsWith('audio/')) {
+        return editor
+          .insertBlock({
+            type: 'audio',
+            data: {
+              file,
+              src: URL.createObjectURL(file),
+            },
+          })
+          .insertBlock('paragraph')
+      } else if (file.type.startsWith('video/')) {
+        return editor
+          .insertBlock({
+            type: 'video',
+            data: {
+              file,
+              poster: '',
+              controls: true,
+              className: 'alignnone',
+              src: URL.createObjectURL(file),
+            },
+          })
+          .insertBlock('paragraph')
+      } else {
+        alert(
+          'Sorry that file type is not supported in PostrChild at the moment'
+        )
+        return
+      }
     },
   }),
   PasteLinkify(),
@@ -118,6 +147,12 @@ class PostrChildEditor extends Component {
           src: v => typeof v === 'string',
           alt: v => typeof v === 'string',
         },
+      },
+      video: {
+        isVoid: true,
+      },
+      audio: {
+        isVoid: true,
       },
     },
   }
