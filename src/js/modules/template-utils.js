@@ -22,9 +22,21 @@ export const removeText = el => {
   return parent
 }
 
-export const sanitizeTemplate = template => {
+export const sanitizeTemplate = (template, shouldRemoveText = true) => {
   // First remove all text
-  template = removeText(template)
+  if (shouldRemoveText) {
+    template = removeText(template)
+  } else {
+    // If not removing everything, then remove the title and content
+    const titleEl = template.getElementsByClassName('p-title')
+    const contentEl = template.getElementsByClassName('e-content')
+    if (titleEl && titleEl[0]) {
+      titleEl.innerHTML = ''
+    }
+    if (contentEl && contentEl[0]) {
+      contentEl.innerHTML = ''
+    }
+  }
 
   // Then remove hrefs from links to prevent accidental clickings
   const links = template.getElementsByTagName('a')
@@ -143,7 +155,7 @@ export const getNewPostTemplate = async () => {
   if (onPageTemplate.length > 0) {
     // There is a template on this page, use it or replace it with the browser template
     if (!hasStoredTemplate) {
-      template = sanitizeTemplate(onPageTemplate[0])
+      template = sanitizeTemplate(onPageTemplate[0], false)
     }
     onPageTemplate[0].replaceWith(template)
   } else {
