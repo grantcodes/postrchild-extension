@@ -154,6 +154,9 @@ class PostrChildEditor extends Component {
       audio: {
         isVoid: true,
       },
+      oembed: {
+        isVoid: true,
+      },
     },
   }
 

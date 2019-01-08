@@ -39,7 +39,15 @@ const rules = [
   // Add another for blocks...
   {
     deserialize(el, next) {
-      const type = el.tagName.toLowerCase()
+      let type = el.tagName.toLowerCase()
+      for (const blockName in blocks) {
+        if (blocks.hasOwnProperty(blockName)) {
+          const block = blocks[blockName]
+          if (block.domRecognizer && block.domRecognizer(el)) {
+            type = blockName
+          }
+        }
+      }
       if (blocks[type]) {
         return blocks[type].deserialize(el, next)
       }

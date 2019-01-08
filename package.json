@@ -7,6 +7,7 @@
     "start": "node utils/webserver.js"
   },
   "dependencies": {
+    "html-react-parser": "^0.6.1",
     "immutable": "^4.0.0-rc.12",
     "is-hotkey": "^0.1.4",
     "microformat-shiv": "^2.0.3",
