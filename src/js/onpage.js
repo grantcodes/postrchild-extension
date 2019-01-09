@@ -50,6 +50,9 @@ const loadEdit = () => {
 }
 
 const isUserSite = async () => {
+  if (process.env.NODE_ENV === 'development') {
+    return true
+  }
   const store = await browser.runtime.sendMessage({
     action: 'getSettings',
   })

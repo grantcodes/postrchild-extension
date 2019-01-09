@@ -117,7 +117,7 @@ async function initializePageAction(tab) {
     const store = await browser.storage.local.get('setting_micropubMe')
     if (store && store.setting_micropubMe) {
       const me = store.setting_micropubMe
-      if (tab.url.indexOf(me) === 0) {
+      if (tab.url.indexOf(me) === 0 || process.env.NODE_ENV === 'development') {
         const res = await browser.tabs.sendMessage(tab.id, {
           action: 'discoverPageAction',
         })
