@@ -79,7 +79,12 @@ class Image extends Component {
 export default {
   name: 'image',
   icon: <MdPhotoSizeSelectActual />,
+  showIcon: true,
+  schema: {
+    isVoid: true,
+  },
   render: props => <Image {...props} />,
+  domRecognizer: el => el.tagName.toLowerCase() === 'img',
   serialize: (children, obj) => {
     return (
       <img
@@ -98,7 +103,7 @@ export default {
       alt: el.getAttribute('alt'),
     },
   }),
-  onButtonClick: editor  => {
+  onButtonClick: editor => {
     const el = document.createElement('input')
     el.type = 'file'
     el.accept = 'image/*'

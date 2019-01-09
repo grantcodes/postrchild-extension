@@ -130,7 +130,7 @@ const mentionsPlugin = SuggestionsPlugin({
 
 const blockSuggestions = []
 for (const blockKey in blocks) {
-  if (blocks.hasOwnProperty(blockKey) && blocks[blockKey].icon) {
+  if (blocks.hasOwnProperty(blockKey) && blocks[blockKey].showIcon) {
     const block = blocks[blockKey]
     blockSuggestions.push({
       key: blockKey,

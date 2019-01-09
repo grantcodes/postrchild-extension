@@ -3,6 +3,8 @@ import { Button } from 'rebass'
 import Floater from './Floater'
 import { marks, nodes, inlines } from '../elements/index'
 
+const allElements = [...marks, ...nodes, ...inlines]
+
 class SelectionToolbar extends Component {
   hasMark = type => {
     const { editor } = this.props
@@ -13,7 +15,7 @@ class SelectionToolbar extends Component {
     return value.activeMarks.some(mark => mark.type == type)
   }
 
-  hasBlock = type => {
+  hasNode = type => {
     const { editor } = this.props
     if (!editor) {
       return null
@@ -35,51 +37,23 @@ class SelectionToolbar extends Component {
     const { position, editor } = this.props
     return (
       <Floater position={position}>
-        {Object.values(marks).map(mark =>
-          mark.icon ? (
-            <Button
-              key={`mark-button-${mark.name}`}
-              bg={this.hasMark(mark.name) ? 'blue' : 'black'}
-              // Use onMouseDown to prevent deselection of text
-              onMouseDown={e => {
-                e.preventDefault()
-                mark.onButtonClick(editor)
-              }}
-            >
-              {mark.icon}
-            </Button>
-          ) : null
-        )}
-
-        {Object.values(nodes).map(node =>
-          node.icon ? (
-            <Button
-              key={`node-button-${node.name}`}
-              bg={this.hasBlock(node.name) ? 'blue' : 'black'}
-              onMouseDown={e => {
-                e.preventDefault()
-                node.onButtonClick(editor)
-              }}
-            >
-              {node.icon}
-            </Button>
-          ) : null
-        )}
-
-        {Object.values(inlines).map(inline =>
-          inline.icon ? (
-            <Button
-              key={`inline-button-${inline.name}`}
-              bg={this.hasInline(inline.name) ? 'blue' : 'black'}
-              onMouseDown={e => {
-                e.preventDefault()
-                inline.onButtonClick(editor)
-              }}
-            >
-              {inline.icon}
-            </Button>
-          ) : null
-        )}
+        {allElements
+          .filter(element => element.showIcon)
+          .map(element => {
+            return (
+              <Button
+                key={`toolbar-button-${element.name}`}
+                bg={this.hasMark(mark.name) ? 'blue' : 'black'}
+                // Use onMouseDown to prevent deselection of text
+                onMouseDown={e => {
+                  e.preventDefault()
+                  element.onButtonClick(editor)
+                }}
+              >
+                {element.icon}
+              </Button>
+            )
+          })}
       </Floater>
     )
   }

@@ -85,6 +85,10 @@ class Oembed extends Component {
 export default {
   name: 'oembed',
   icon: <MdWebAsset />,
+  showIcon: true,
+  schema: {
+    isVoid: true,
+  },
   render: props => <Oembed {...props} />,
   serialize: (children, obj) => {
     return (

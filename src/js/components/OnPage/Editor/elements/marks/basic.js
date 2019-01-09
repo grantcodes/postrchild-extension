@@ -1,8 +1,17 @@
 import React from 'react'
-const basicMark = (name, El, icon) => {
-  const data = {
-    name,
-    icon,
+const required = [
+  'name',
+  'icon',
+  'render',
+  'serialize',
+  'deserialize',
+  'domRecognizer',
+]
+
+const basicMark = ({ element: El, ...opts }) => {
+  const defaultData = {
+    showIcon: false,
+    domRecognizer: el => el.tagName.toLowerCase() === El.toLowerCase(),
     render: ({ attributes, children }) => <El {...attributes}>{children}</El>,
     serialize: children => <El>{children}</El>,
     deserialize: (el, next) => ({
@@ -14,6 +23,15 @@ const basicMark = (name, El, icon) => {
       editor.toggleMark(name)
     },
   }
+  const data = Object.assign({}, defaultData, opts)
+
+  for (const key of required) {
+    if (!data[key]) {
+      console.log(data)
+      throw new Error(`Mark missing ${key} property`)
+    }
+  }
+
   return data
 }
 

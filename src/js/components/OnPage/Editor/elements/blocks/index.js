@@ -4,4 +4,4 @@ import audio from './audio'
 import video from './video'
 import oembed from './oembed'
 
-export { img, hr, audio, video, oembed }
+export default [img, hr, audio, video, oembed]
