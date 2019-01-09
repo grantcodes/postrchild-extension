@@ -19,7 +19,7 @@ const createOnPageContainer = () => {
   onPageContainer.style.position = 'fixed'
   onPageContainer.style.bottom = '20px'
   onPageContainer.style.right = '20px'
-  onPageContainer.style.zIndex = 99999
+  onPageContainer.style.zIndex = 99999999
   document.body.appendChild(onPageContainer)
   return onPageContainer
 }
