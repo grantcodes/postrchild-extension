@@ -5,11 +5,24 @@ import InsertImages from 'slate-drop-or-paste-images'
 import PasteLinkify from 'slate-paste-linkify'
 import CollapseOnEscape from 'slate-collapse-on-escape'
 import SelectionToolbar from './Toolbar/Selection'
-import NewBlockToolbar from './Toolbar/NewBlock'
 import keyHandler from './key-handler'
 import converter from './converter'
 import suggestionPlugins from './suggestions'
 import { marks, nodes, blocks, inlines } from './elements/index'
+
+const blocksSchema = {}
+for (const block of blocks) {
+  if (block.schema) {
+    blocksSchema[block.name] = block.schema
+  }
+}
+
+const inlinesSchema = {}
+for (const inline of inlines) {
+  if (inline.schema) {
+    inlinesSchema[inline.name] = inline.schema
+  }
+}
 
 const plugins = [
   InsertImages({
@@ -141,36 +154,13 @@ class PostrChildEditor extends Component {
   }
 
   schema = {
-    blocks: {
-      image: {
-        isVoid: true,
-        data: {
-          className: v => typeof v === 'string',
-          src: v => typeof v === 'string',
-          alt: v => typeof v === 'string',
-        },
-      },
-      video: {
-        isVoid: true,
-      },
-      audio: {
-        isVoid: true,
-      },
-      oembed: {
-        isVoid: true,
-      },
-      hr: {
-        isVoid: true,
-      },
-    },
+    blocks: blocksSchema,
+    inlines: inlinesSchema,
   }
 
   render() {
     const { rich, value: unusedValue, onChange, ...editorProps } = this.props
     const { value } = this.state
-    const { startBlock } = value
-    const isBlankParagraph =
-      startBlock && startBlock.type === 'paragraph' && startBlock.text === ''
     return (
       <Fragment>
         <Editor
@@ -193,12 +183,6 @@ class PostrChildEditor extends Component {
             position={menuPosition}
           />
         )}
-        {/* {rich && isBlankParagraph && (
-          <NewBlockToolbar
-            editor={this.editor.current}
-            position={menuPosition}
-          />
-        )} */}
         {rich &&
           suggestionPlugins.map((plugin, i) => (
             <plugin.SuggestionPortal

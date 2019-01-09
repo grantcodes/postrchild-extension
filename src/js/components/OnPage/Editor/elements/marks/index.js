@@ -1,11 +1,35 @@
 import React from 'react'
-import { MdFormatBold } from 'react-icons/md'
+import {
+  MdFormatBold,
+  MdFormatItalic,
+  MdFormatUnderlined,
+  MdCode,
+} from 'react-icons/md'
 import basicMark from './basic'
 
-export const code = basicMark('code', 'code', null)
+const code = basicMark({
+  name: 'code',
+  element: 'code',
+  icon: <MdCode />,
+})
 
-export const strong = basicMark('bold', 'strong', <MdFormatBold />)
+const strong = basicMark({
+  name: 'bold',
+  element: 'strong',
+  icon: <MdFormatBold />,
+  showIcon: true,
+})
 
-export const u = basicMark('underline', 'u', null)
+const u = basicMark({
+  name: 'underline',
+  element: 'u',
+  icon: <MdFormatUnderlined />,
+})
 
-export const em = basicMark('italic', 'em', null)
+const em = basicMark({
+  name: 'italic',
+  element: 'em',
+  icon: <MdFormatItalic />,
+})
+
+export default [code, strong, u, em]

@@ -46,7 +46,12 @@ class Audio extends Component {
 export default {
   name: 'audio',
   icon: <MdMusicVideo />,
+  showIcon: true,
+  schema: {
+    isVoid: true,
+  },
   render: props => <Audio {...props} />,
+  domRecognizer: el => el.tagName.toLowerCase() === 'audio',
   serialize: (children, obj) => {
     return <audio controls={true} src={obj.data.get('src')} />
   },

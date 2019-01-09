@@ -12,7 +12,10 @@ const getSpaceType = chars => {
     case '*':
     case '-':
     case '+':
-      return 'list-item'
+      return 'unordered-list'
+    case '1':
+    case '1.':
+      return 'ordered-list'
     case '>':
       return 'block-quote'
     case '#':
@@ -55,10 +58,15 @@ const onSpace = (event, editor, next) => {
   const chars = startBlock.text.slice(0, start.offset).replace(/\s*/g, '')
   const type = getSpaceType(chars)
   if (!type) return next()
-  if (type == 'list-item' && startBlock.type == 'list-item') return next()
+  if (
+    (type === 'unordered-list' || type === 'ordered-list') &&
+    startBlock.type == 'list-item'
+  ) {
+    return next()
+  }
   event.preventDefault()
 
-  // Special hr handling
+  // Special handling for lists and hr
   if (type === 'hr') {
     editor
       .moveFocusToStartOfNode(startBlock)
@@ -67,15 +75,17 @@ const onSpace = (event, editor, next) => {
       .moveToEndOfBlock()
       .insertBlock('paragraph')
     return next()
-  }
-
-  editor.setBlocks(type)
-
-  if (type == 'list-item') {
+  } else if (type === 'ordered-list') {
+    editor.setBlocks('list-item')
+    editor.wrapBlock('ordered-list')
+  } else if (type === 'unordered-list') {
+    editor.setBlocks('list-item')
     editor.wrapBlock('unordered-list')
+  } else {
+    editor.setBlocks(type)
   }
 
-  editor.moveFocusToStartOfNode(startBlock).delete()
+  return editor.moveFocusToStartOfNode(startBlock).delete()
 }
 
 /**
@@ -101,6 +111,7 @@ const onBackspace = (event, editor, next) => {
 
   if (startBlock.type == 'list-item') {
     editor.unwrapBlock('ordered-list')
+    editor.unwrapBlock('unordered-list')
   }
 }
 
@@ -128,6 +139,7 @@ const onEnter = (event, editor, next) => {
       .moveToEndOfBlock()
       .unwrapBlock('ordered-list')
       .unwrapBlock('unordered-list')
+      .setBlocks('paragraph')
   }
 
   if (start.offset == 0 && startBlock.text.length == 0)

@@ -107,7 +107,12 @@ class Video extends Component {
 export default {
   name: 'video',
   icon: <MdMovie />,
+  showIcon: true,
+  schema: {
+    isVoid: true,
+  },
   render: props => <Video {...props} />,
+  domRecognizer: el => el.tagName.toLowerCase() === 'video',
   serialize: (children, obj) => {
     return (
       <video

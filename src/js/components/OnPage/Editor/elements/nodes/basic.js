@@ -2,11 +2,20 @@ import React from 'react'
 
 const DEFAULT_NODE_NAME = 'paragraph'
 
-const basicNode = (name, El, icon) => {
-  const data = {
-    name,
-    icon,
+const required = [
+  'name',
+  'icon',
+  'render',
+  'serialize',
+  'deserialize',
+  'domRecognizer',
+]
+
+const basicNode = ({ element: El, ...opts }) => {
+  const defaultData = {
+    showIcon: false,
     render: ({ attributes, children }) => <El {...attributes}>{children}</El>,
+    domRecognizer: el => el.tagName.toLowerCase() === El.toLowerCase(),
     serialize: children => <El>{children}</El>,
     deserialize: (el, next) => ({
       object: 'block',
@@ -16,7 +25,7 @@ const basicNode = (name, El, icon) => {
       },
       nodes: next(el.childNodes),
     }),
-    onButtonClick: editor  => {
+    onButtonClick: editor => {
       const { value } = editor
       const { document } = value
 
@@ -65,6 +74,16 @@ const basicNode = (name, El, icon) => {
       }
     },
   }
+
+  const data = Object.assign({}, defaultData, opts)
+
+  for (const key of required) {
+    if (!data[key]) {
+      console.log(data)
+      throw new Error(`Node missing ${key} property`)
+    }
+  }
+
   return data
 }
 
