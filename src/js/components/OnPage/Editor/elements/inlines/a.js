@@ -19,8 +19,7 @@ export default {
     },
     nodes: next(el.childNodes),
   }),
-  onButtonClick: editor => e => {
-    e.preventDefault()
+  onButtonClick: editor => {
     if (editor.query('isLinkActive', editor.value)) {
       editor.command('unwrapLink')
     } else {

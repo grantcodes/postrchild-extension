@@ -55,7 +55,7 @@ class Oembed extends Component {
         style={{ position: 'relative', opacity: loading ? 0.5 : 1 }}
         data-postrchild-oembed-url={data.url}
       >
-        {parseReact(data.html)}
+        {data.html && parseReact(data.html)}
         <Overlay>
           <AlignmentButtons
             alignment={(
@@ -106,8 +106,7 @@ export default {
       html: el.innerHTML,
     },
   }),
-  onButtonClick: editor => e => {
-    e.preventDefault()
+  onButtonClick: editor => {
     const url = window.prompt('What url would you like to embed?')
     const oembedBlock = {
       type: 'oembed',

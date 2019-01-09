@@ -128,8 +128,7 @@ export default {
       controls: el.getAttribute('controls'),
     },
   }),
-  onButtonClick: editor => e => {
-    e.preventDefault()
+  onButtonClick: editor => {
     const el = document.createElement('input')
     el.type = 'file'
     el.accept = 'video/*'

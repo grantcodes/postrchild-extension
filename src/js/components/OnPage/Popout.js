@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Box, Button } from 'rebass'
-import {MdClose} from 'react-icons/md'
+import { MdClose } from 'react-icons/md'
 import { Transition } from 'react-transition-group'
 
 class Popout extends Component {
@@ -68,7 +68,9 @@ class Popout extends Component {
                 height: 'auto',
                 fontSize: 30,
               }}
-            ><MdClose /></Button>
+            >
+              <MdClose />
+            </Button>
             {this.props.children}
           </Box>
         )}

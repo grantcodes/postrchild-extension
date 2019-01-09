@@ -57,8 +57,7 @@ export default {
       src: el.getAttribute('src'),
     },
   }),
-  onButtonClick: editor => e => {
-    e.preventDefault()
+  onButtonClick: editor => {
     const el = document.createElement('input')
     el.type = 'file'
     el.accept = 'audio/*'

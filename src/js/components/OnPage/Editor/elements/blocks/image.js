@@ -98,8 +98,7 @@ export default {
       alt: el.getAttribute('alt'),
     },
   }),
-  onButtonClick: editor => e => {
-    e.preventDefault()
+  onButtonClick: editor  => {
     const el = document.createElement('input')
     el.type = 'file'
     el.accept = 'image/*'

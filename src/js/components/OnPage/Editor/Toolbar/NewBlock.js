@@ -22,7 +22,10 @@ class NewBlockToolbar extends Component {
             <Button
               key={`block-button-${block.name}`}
               bg={this.hasBlock(block.name) ? 'blue' : 'black'}
-              onMouseDown={block.onButtonClick(editor)}
+              onMouseDown={e => {
+                e.preventDefault()
+                block.onButtonClick(editor)
+              }}
             >
               {block.icon}
             </Button>

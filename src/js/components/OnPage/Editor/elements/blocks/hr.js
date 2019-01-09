@@ -1,5 +1,4 @@
 import React from 'react'
-import Icon from '../../Toolbar/Icon'
 
 export default {
   name: 'hr',
@@ -13,9 +12,7 @@ export default {
       className: el.getAttribute('class'),
     },
   }),
-  onButtonClick: editor => e => {
-    e.preventDefault()
-    const { value } = editor
+  onButtonClick: editor => {
     editor
       .moveToEndOfBlock()
       .insertBlock('hr')

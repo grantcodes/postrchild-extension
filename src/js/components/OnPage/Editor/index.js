@@ -8,6 +8,7 @@ import SelectionToolbar from './Toolbar/Selection'
 import NewBlockToolbar from './Toolbar/NewBlock'
 import keyHandler from './key-handler'
 import converter from './converter'
+import suggestionPlugins from './suggestions'
 import { marks, nodes, blocks, inlines } from './elements/index'
 
 const plugins = [
@@ -58,6 +59,7 @@ const plugins = [
   }),
   PasteLinkify(),
   CollapseOnEscape(),
+  ...suggestionPlugins,
 ]
 
 // Stored outside of state to prevent updates
@@ -157,6 +159,9 @@ class PostrChildEditor extends Component {
       oembed: {
         isVoid: true,
       },
+      hr: {
+        isVoid: true,
+      },
     },
   }
 
@@ -174,7 +179,7 @@ class PostrChildEditor extends Component {
           value={value}
           onChange={this.handleChange}
           onKeyDown={keyHandler}
-          plugins={plugins}
+          plugins={plugins} // TODO: Disable plugins if not rich
           ref={this.editor}
           commands={this.commands}
           queries={this.queries}
@@ -189,12 +194,18 @@ class PostrChildEditor extends Component {
           />
         )}
         {/* {rich && isBlankParagraph && (
-          // Disabled for now as only has images and images can be drag and dropped.
-          // <NewBlockToolbar
-          //   editor={this.editor.current}
-          //   position={menuPosition}
-          // />
+          <NewBlockToolbar
+            editor={this.editor.current}
+            position={menuPosition}
+          />
         )} */}
+        {rich &&
+          suggestionPlugins.map((plugin, i) => (
+            <plugin.SuggestionPortal
+              value={value}
+              key={`suggestion-portal-${i}`}
+            />
+          ))}
       </Fragment>
     )
   }

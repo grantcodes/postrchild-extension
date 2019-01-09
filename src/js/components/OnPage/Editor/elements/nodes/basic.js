@@ -16,8 +16,7 @@ const basicNode = (name, El, icon) => {
       },
       nodes: next(el.childNodes),
     }),
-    onButtonClick: editor => e => {
-      e.preventDefault()
+    onButtonClick: editor  => {
       const { value } = editor
       const { document } = value
 

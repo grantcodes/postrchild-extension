@@ -24,3 +24,4 @@ const Theme = props => (
 )
 
 export default Theme
+export { theme }

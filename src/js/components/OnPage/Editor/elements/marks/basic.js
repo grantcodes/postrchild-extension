@@ -10,8 +10,7 @@ const basicMark = (name, El, icon) => {
       type: name,
       nodes: next(el.childNodes),
     }),
-    onButtonClick: editor => e => {
-      e.preventDefault()
+    onButtonClick: editor => {
       editor.toggleMark(name)
     },
   }

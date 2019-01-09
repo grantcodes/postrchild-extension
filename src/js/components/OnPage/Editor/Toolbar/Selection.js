@@ -41,7 +41,10 @@ class SelectionToolbar extends Component {
               key={`mark-button-${mark.name}`}
               bg={this.hasMark(mark.name) ? 'blue' : 'black'}
               // Use onMouseDown to prevent deselection of text
-              onMouseDown={mark.onButtonClick(editor)}
+              onMouseDown={e => {
+                e.preventDefault()
+                mark.onButtonClick(editor)
+              }}
             >
               {mark.icon}
             </Button>
@@ -53,7 +56,10 @@ class SelectionToolbar extends Component {
             <Button
               key={`node-button-${node.name}`}
               bg={this.hasBlock(node.name) ? 'blue' : 'black'}
-              onMouseDown={node.onButtonClick(editor)}
+              onMouseDown={e => {
+                e.preventDefault()
+                node.onButtonClick(editor)
+              }}
             >
               {node.icon}
             </Button>
@@ -65,7 +71,10 @@ class SelectionToolbar extends Component {
             <Button
               key={`inline-button-${inline.name}`}
               bg={this.hasInline(inline.name) ? 'blue' : 'black'}
-              onMouseDown={inline.onButtonClick(editor)}
+              onMouseDown={e => {
+                e.preventDefault()
+                inline.onButtonClick(editor)
+              }}
             >
               {inline.icon}
             </Button>
