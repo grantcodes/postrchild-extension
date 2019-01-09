@@ -9,6 +9,8 @@ const buttonStyle = {
   lineHeight: 24 / 16,
   fontFamily: 'monospace',
   textAlign: 'center',
+  color: 'inherit',
+  fill: 'currentColor',
 }
 
 const Icon = ({ path = null, size = 20, children }) => (

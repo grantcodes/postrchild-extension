@@ -221,6 +221,7 @@ class SuggestionPortal extends React.Component {
       if (rect) {
         this.portalContainer.current.style.display = 'block'
         this.portalContainer.current.style.position = 'absolute'
+        this.portalContainer.current.style.zIndex = 9999
         this.portalContainer.current.style.opacity = 1
         this.portalContainer.current.style.top = `${rect.top +
           window.scrollY}px`
@@ -270,7 +271,7 @@ class SuggestionPortal extends React.Component {
           ))}
         </SuggestionList>
       </Box>,
-      document && document.getElementById('root')
+      document.body
     )
   }
 }

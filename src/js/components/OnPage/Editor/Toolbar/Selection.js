@@ -6,31 +6,17 @@ import { marks, nodes, inlines } from '../elements/index'
 const allElements = [...marks, ...nodes, ...inlines]
 
 class SelectionToolbar extends Component {
-  hasMark = type => {
+  hasElement = type => {
     const { editor } = this.props
     if (!editor) {
       return null
     }
     const { value } = editor
-    return value.activeMarks.some(mark => mark.type == type)
-  }
-
-  hasNode = type => {
-    const { editor } = this.props
-    if (!editor) {
-      return null
-    }
-    const { value } = editor
-    return value.blocks.some(node => node.type == type)
-  }
-
-  hasInline = type => {
-    const { editor } = this.props
-    if (!editor) {
-      return null
-    }
-    const { value } = editor
-    return value.inlines.some(inline => inline.type == type)
+    return (
+      value.inlines.some(inline => inline.type == type) ||
+      value.activeMarks.some(mark => mark.type == type) ||
+      value.blocks.some(node => node.type == type)
+    )
   }
 
   render() {
@@ -43,8 +29,7 @@ class SelectionToolbar extends Component {
             return (
               <Button
                 key={`toolbar-button-${element.name}`}
-                bg={this.hasMark(mark.name) ? 'blue' : 'black'}
-                // Use onMouseDown to prevent deselection of text
+                bg={this.hasElement(element.name) ? 'blue' : 'black'}
                 onMouseDown={e => {
                   e.preventDefault()
                   element.onButtonClick(editor)

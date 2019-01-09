@@ -15,7 +15,11 @@ const Theme = props => (
     <IconContext.Provider
       value={{
         size: 20,
-        style: { verticalAlign: 'middle' },
+        style: {
+          verticalAlign: 'middle',
+          fill: 'currentColor',
+          color: 'inherit',
+        },
       }}
     >
       <Base>{props.children}</Base>

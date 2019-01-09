@@ -19,7 +19,7 @@ const basicNode = ({ element: El, ...opts }) => {
     serialize: children => <El>{children}</El>,
     deserialize: (el, next) => ({
       object: 'block',
-      type: name,
+      type: opt.name,
       data: {
         className: el.getAttribute('class'),
       },
@@ -28,6 +28,7 @@ const basicNode = ({ element: El, ...opts }) => {
     onButtonClick: editor => {
       const { value } = editor
       const { document } = value
+      const name = opts.name
 
       const hasBlock = type => {
         if (!editor) {

@@ -16,11 +16,11 @@ const basicMark = ({ element: El, ...opts }) => {
     serialize: children => <El>{children}</El>,
     deserialize: (el, next) => ({
       object: 'mark',
-      type: name,
+      type: opts.name,
       nodes: next(el.childNodes),
     }),
     onButtonClick: editor => {
-      editor.toggleMark(name)
+      editor.toggleMark(opts.name)
     },
   }
   const data = Object.assign({}, defaultData, opts)
