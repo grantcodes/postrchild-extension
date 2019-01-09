@@ -100,16 +100,16 @@ const onSpace = (event, editor, next) => {
 const onBackspace = (event, editor, next) => {
   const { value } = editor
   const { selection } = value
-  if (selection.isExpanded) return next()
-  if (selection.start.offset != 0) return next()
-
   const { startBlock } = value
-  if (startBlock.type == 'paragraph') return next()
+
+  if (selection.isExpanded) return next()
+  if (selection.start.offset !== 0) return next()
+  if (startBlock.type === 'paragraph') return next()
 
   event.preventDefault()
   editor.setBlocks('paragraph')
 
-  if (startBlock.type == 'list-item') {
+  if (startBlock.type === 'list-item') {
     editor.unwrapBlock('ordered-list')
     editor.unwrapBlock('unordered-list')
   }
@@ -145,17 +145,17 @@ const onEnter = (event, editor, next) => {
   if (start.offset == 0 && startBlock.text.length == 0)
     return onBackspace(event, editor, next)
 
-  if (end.offset != startBlock.text.length) return next()
+  if (end.offset !== startBlock.text.length) return next()
 
   if (
-    startBlock.type != 'heading-one' &&
-    startBlock.type != 'heading-two' &&
-    startBlock.type != 'heading-three' &&
-    startBlock.type != 'heading-four' &&
-    startBlock.type != 'heading-five' &&
-    startBlock.type != 'heading-six' &&
-    startBlock.type != 'blockquote' &&
-    startBlock.type != 'code-block'
+    startBlock.type !== 'heading-one' &&
+    startBlock.type !== 'heading-two' &&
+    startBlock.type !== 'heading-three' &&
+    startBlock.type !== 'heading-four' &&
+    startBlock.type !== 'heading-five' &&
+    startBlock.type !== 'heading-six' &&
+    startBlock.type !== 'blockquote' &&
+    startBlock.type !== 'code-block'
   ) {
     return next()
   }

@@ -45,6 +45,7 @@ class Audio extends Component {
 
 export default {
   name: 'audio',
+  keywords: ['audio', 'music', 'song'],
   icon: <MdMusicVideo />,
   showIcon: true,
   schema: {

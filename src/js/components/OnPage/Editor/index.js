@@ -71,7 +71,7 @@ const plugins = [
     },
   }),
   PasteLinkify(),
-  // CollapseOnEscape(),
+  CollapseOnEscape(),
   ...suggestionPlugins,
 ]
 

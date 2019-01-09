@@ -84,6 +84,7 @@ class Oembed extends Component {
 
 export default {
   name: 'oembed',
+  keywords: ['oembed', 'embed', 'youtube', 'external'],
   icon: <MdWebAsset />,
   showIcon: true,
   schema: {

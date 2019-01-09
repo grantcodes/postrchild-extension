@@ -78,6 +78,7 @@ class Image extends Component {
 
 export default {
   name: 'image',
+  keywords: ['image', 'photo', 'img'],
   icon: <MdPhotoSizeSelectActual />,
   showIcon: true,
   schema: {

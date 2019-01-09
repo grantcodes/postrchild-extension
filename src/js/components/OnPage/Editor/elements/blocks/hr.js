@@ -3,6 +3,7 @@ import { MdRemove } from 'react-icons/md'
 
 export default {
   name: 'hr',
+  keywords: ['hr', 'horizontal', 'rule', 'break'],
   icon: <MdRemove />,
   showIcon: false,
   schema: {

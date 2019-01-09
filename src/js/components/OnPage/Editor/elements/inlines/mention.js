@@ -1,11 +1,13 @@
 import React from 'react'
-import { rgba } from 'polished'
-// import { MdPerson } from 'react-icons/md'
+import { MdPerson } from 'react-icons/md'
 
 export default {
   name: 'mention',
-  // icon: <MdPerson />,
-  icon: null,
+  icon: <MdPerson />,
+  showIcon: false,
+  schema: {
+    isVoid: true,
+  },
   render: ({ attributes, node, isSelected }) => {
     const hCard = node.data.get('hCard')
     return (
@@ -14,6 +16,7 @@ export default {
         className="h-card"
         href={hCard.properties.url[0]}
         style={isSelected ? { backgroundColor: 'rgba(109,160,255,0.2)' } : null}
+        contentEditable={false}
       >
         @{hCard.properties.name[0]}
       </a>

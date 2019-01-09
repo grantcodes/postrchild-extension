@@ -106,6 +106,7 @@ class Video extends Component {
 
 export default {
   name: 'video',
+  keywords: ['video', 'film', 'movie'],
   icon: <MdMovie />,
   showIcon: true,
   schema: {

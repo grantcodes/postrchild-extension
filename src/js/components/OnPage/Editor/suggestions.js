@@ -60,7 +60,9 @@ const mentionsPlugin = SuggestionsPlugin({
   capture: /@([\w]*)/,
   suggestions: search =>
     search
-      ? users.filter(user => user.value.toLowerCase().indexOf(search) !== -1)
+      ? users.filter(user =>
+          user.value.toLowerCase().includes(search.toLowerCase())
+        )
       : users,
   onEnter: (suggestion, editor) => {
     const value = editor.value
@@ -69,25 +71,16 @@ const mentionsPlugin = SuggestionsPlugin({
     // Delete the captured value, including the `@` symbol
     editor.deleteBackward(inputValue ? inputValue.length + 1 : 1)
 
-    const selectedRange = value.selection
-
     return editor
-      .insertInlineAtRange(selectedRange, {
+      .insertInline({
         object: 'inline',
         type: 'mention',
         data: {
           hCard: suggestion.hCard,
         },
-        // nodes: [
-        //   {
-        //     object: 'text',
-        //     leaves: [{ text: `@${suggestion.hCard.properties.name[0]}` }],
-        //   },
-        // ],
       })
+      .moveToStartOfNextText()
       .focus()
-    // .moveFocusForward(2)
-    // .insertText(' ')
   },
 })
 
@@ -135,6 +128,7 @@ for (const blockKey in blocks) {
     blockSuggestions.push({
       key: blockKey,
       value: block.name,
+      keywords: block.keywords,
       suggestion: (
         <span>
           {block.icon} {block.name}
@@ -147,12 +141,18 @@ for (const blockKey in blocks) {
 const blockPlugin = SuggestionsPlugin({
   trigger: '/',
   capture: /\/([\w]*)/,
-  suggestions: blockSuggestions,
+  suggestions: search =>
+    search
+      ? blockSuggestions.filter(block =>
+          block.keywords.find(keyword =>
+            keyword.toLowerCase().includes(search.toLowerCase())
+          )
+        )
+      : blockSuggestions,
   startOfParagraph: true,
   onEnter: (suggestion, editor) => {
     const block = blocks[suggestion.key]
     const { anchorText } = editor.value
-    // TODO: Delete current block
     editor.deleteBackward(anchorText.text.length)
     editor.unwrapBlock(block.name)
     return block.onButtonClick(editor)
