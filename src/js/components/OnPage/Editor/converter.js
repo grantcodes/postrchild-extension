@@ -67,6 +67,14 @@ const rules = [
   {
     deserialize(el, next) {
       const type = el.tagName.toLowerCase()
+      for (const inlineName in inlines) {
+        if (inlines.hasOwnProperty(inlineName)) {
+          const inline = inlines[inlineName]
+          if (inline.domRecognizer && inline.domRecognizer(el)) {
+            type = inlineName
+          }
+        }
+      }
       if (inlines[type]) {
         return inlines[type].deserialize(el, next)
       }

@@ -1,6 +1,5 @@
 import React from 'react'
 import { MdLink } from 'react-icons/md'
-import Icon from '../../Toolbar/Icon'
 
 export default {
   name: 'link',

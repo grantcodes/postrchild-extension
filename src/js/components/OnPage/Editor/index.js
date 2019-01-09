@@ -5,7 +5,6 @@ import InsertImages from 'slate-drop-or-paste-images'
 import PasteLinkify from 'slate-paste-linkify'
 import CollapseOnEscape from 'slate-collapse-on-escape'
 import SelectionToolbar from './Toolbar/Selection'
-import NewBlockToolbar from './Toolbar/NewBlock'
 import keyHandler from './key-handler'
 import converter from './converter'
 import suggestionPlugins from './suggestions'
@@ -58,7 +57,7 @@ const plugins = [
     },
   }),
   PasteLinkify(),
-  CollapseOnEscape(),
+  // CollapseOnEscape(),
   ...suggestionPlugins,
 ]
 
@@ -160,6 +159,11 @@ class PostrChildEditor extends Component {
         isVoid: true,
       },
       hr: {
+        isVoid: true,
+      },
+    },
+    inlines: {
+      mention: {
         isVoid: true,
       },
     },
