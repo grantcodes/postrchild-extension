@@ -13,7 +13,6 @@ class EditorPortal extends Component {
   render() {
     const { el, ...editorProps } = this.props
     editorProps.className = 'postrchild-editor'
-    // el.innerHTML = ''
     return createPortal(<Editor {...editorProps} />, el)
   }
 }

@@ -51,6 +51,7 @@ class Settings extends Component {
       micropub.options.me = this.state.micropubMe
       const url = await micropub.getAuthUrl()
       await browser.storage.local.set({
+        setting_micropubToken: '',
         setting_tokenEndpoint: micropub.options.tokenEndpoint,
         setting_micropubEndpoint: micropub.options.micropubEndpoint,
       })

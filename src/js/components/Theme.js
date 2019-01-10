@@ -1,4 +1,5 @@
 import React from 'react'
+import { hot } from 'react-hot-loader'
 import { Provider, Base } from 'rebass'
 import { createColors } from 'rebass/src/colors'
 import { IconContext } from 'react-icons'
@@ -27,5 +28,5 @@ const Theme = props => (
   </Provider>
 )
 
-export default Theme
+export default hot(module)(Theme)
 export { theme }

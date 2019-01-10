@@ -1,19 +1,20 @@
 {
   "presets": [
-    "stage-0",
     [
-      "env",
+      "@babel/preset-env",
       {
-        "useBuiltIns": true,
+        "useBuiltIns": "entry",
         "shippedProposals": true,
         "targets": {
           "node": "current"
         }
       }
     ],
-    "react"
+    "@babel/preset-react"
   ],
   "plugins": [
+    "@babel/plugin-proposal-class-properties",
+    "@babel/plugin-syntax-dynamic-import",
     "react-hot-loader/babel"
   ]
 }

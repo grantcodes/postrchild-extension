@@ -1,18 +1,14 @@
 const webpack = require('webpack')
 const path = require('path')
-const fileSystem = require('fs')
-const env = require('./utils/env')
+const webExt = require('web-ext').default
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const WriteFilePlugin = require('write-file-webpack-plugin')
-// const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
-const pkg = require('./package.json')
+const devMode = process.env.NODE_ENV === 'development'
 
 // load the secrets
 var alias = {}
-
-var secretsPath = path.join(__dirname, 'secrets.' + env.NODE_ENV + '.js')
 
 var fileExtensions = [
   'jpg',
@@ -27,11 +23,7 @@ var fileExtensions = [
   'woff2',
 ]
 
-if (fileSystem.existsSync(secretsPath)) {
-  alias['secrets'] = secretsPath
-}
-
-var options = {
+module.exports = {
   entry: {
     popup: path.join(__dirname, 'src', 'js', 'popup.js'),
     onpage: path.join(__dirname, 'src', 'js', 'onpage.js'),
@@ -42,7 +34,11 @@ var options = {
     path: path.join(__dirname, 'build'),
     filename: '[name].bundle.js',
   },
-  devtool: false,
+  mode: devMode ? 'development' : 'production',
+  devtool: devMode ? 'cheap-module-eval-source-map' : 'source-map',
+  optimization: {
+    minimize: false, // Minimization breaks utf-8 encoding because of something inside slate-react
+  },
   module: {
     rules: [
       {
@@ -72,13 +68,16 @@ var options = {
       .map(extension => '.' + extension)
       .concat(['.jsx', '.js', '.css']),
   },
+  devServer: {
+    hot: true,
+    contentBase: path.join(__dirname, 'build'),
+    headers: { 'Access-Control-Allow-Origin': '*' },
+    port: 3000,
+    disableHostCheck: true,
+  },
   plugins: [
     // clean the build folder
     new CleanWebpackPlugin(['build']),
-    // expose and write the allowed env vars on the compiled bundle
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(env.NODE_ENV),
-    }),
     new CopyWebpackPlugin([
       // Copy these files to comply with some extension store rules
       'README.md',
@@ -114,11 +113,17 @@ var options = {
       chunks: ['background'],
     }),
     new WriteFilePlugin(),
+    new webpack.HotModuleReplacementPlugin(),
+    // Plugin to bundle the extension
+    {
+      apply: compiler => {
+        compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
+          webExt.cmd.build({
+            sourceDir: path.join(__dirname, 'build'),
+            artifactsDir: path.join(__dirname, 'build'),
+          })
+        })
+      },
+    },
   ],
 }
-
-if (env.NODE_ENV === 'development') {
-  options.devtool = 'cheap-module-eval-source-map'
-}
-
-module.exports = options

@@ -1,12 +1,15 @@
 import browser from 'webextension-polyfill'
-import micropub from './modules/micropub'
 
 import React from 'react'
 import { render } from 'react-dom'
 import Theme from './components/Theme'
-import EditPost from './components/OnPage/EditPost'
 import NewPost from './components/OnPage/NewPost'
+import EditPost from './components/OnPage/EditPost'
 import { getNewPostTemplate } from './modules/template-utils'
+
+if (module.hot) {
+  __webpack_public_path__ = 'http://localhost:3000/'
+}
 
 const createOnPageContainer = () => {
   const existing = document.getElementById('postrchild-extension-app-container')
@@ -37,7 +40,7 @@ const loadNew = async () => {
   }
 }
 
-const loadEdit = () => {
+const loadEdit = async () => {
   const editorContainer = createOnPageContainer()
   if (editorContainer) {
     render(
@@ -95,10 +98,13 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
 })
 
 const init = async () => {
+  const store = await browser.runtime.sendMessage({
+    action: 'getSettings',
+  })
   // Complete auth if on micropub redirect page
   if (
-    window.location.href.indexOf(micropub.options.redirectUri) === 0 &&
-    !micropub.options.token
+    window.location.href.startsWith('https://postrchild.com/auth') &&
+    !store.setting_micropubToken
   ) {
     const params = new URLSearchParams(window.location.search)
     const code = params.get('code')

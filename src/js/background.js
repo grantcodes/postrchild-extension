@@ -6,12 +6,6 @@ import notification from './modules/notification'
 import micropub from './modules/micropub'
 import Bookmark from './modules/bookmarks'
 
-// browser.tabs.onCreated.addListener(tab => {
-//   if (tab.active && tab.url.indexOf("http") !== 1) {
-//     console.log("New tab page please");
-//   }
-// });
-
 const shouldAutoPushBookmarks = async () => {
   const store = await browser.storage.local.get('setting_bookmarkAutoSync')
   return store.setting_bookmarkAutoSync
