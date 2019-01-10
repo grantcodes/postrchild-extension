@@ -102,6 +102,21 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
     case 'closeTab': {
       browser.tabs.remove(sender.tab.id)
     }
+    case 'getToken': {
+      const { code, state } = request
+      const store = await browser.storage.local.get()
+      micropub.options.me = store.setting_micropubMe
+      micropub.options.tokenEndpoint = store.setting_tokenEndpoint
+      micropub.options.micropubEndpoint = store.setting_micropubEndpoint
+
+      if (code && state && state == micropub.options.state) {
+        const token = await micropub.getToken(code)
+        await browser.storage.local.set({ setting_micropubToken: token })
+        return token
+      }
+
+      throw new Error('Error with code or state params')
+    }
     default: {
       break
     }

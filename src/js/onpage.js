@@ -105,19 +105,13 @@ const init = async () => {
     const state = params.get('state')
 
     try {
-      const store = await browser.runtime.sendMessage({
-        action: 'getSettings',
+      await browser.runtime.sendMessage({
+        action: 'getToken',
+        state,
+        code,
       })
-      micropub.options.me = store.setting_micropubMe
-      micropub.options.tokenEndpoint = store.setting_tokenEndpoint
-      micropub.options.micropubEndpoint = store.setting_micropubEndpoint
-
-      if (code && state && state == micropub.options.state) {
-        const token = await micropub.getToken(code)
-        await browser.storage.local.set({ setting_micropubToken: token })
-        alert("Ok you're all set up. Visit your website to start posting")
-        await browser.runtime.sendMessage({ action: 'closeTab' })
-      }
+      alert("Ok you're all set up. Visit your website to start posting")
+      await browser.runtime.sendMessage({ action: 'closeTab' })
     } catch (err) {
       console.log('Error getting access token', err)
       alert('Uh oh, there was an error getting the access token')

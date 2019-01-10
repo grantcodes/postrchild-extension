@@ -13,7 +13,7 @@ class Settings extends Component {
       micropubEndpoint: '',
       newPostTemplate: '',
       bookmarkAutoSync: false,
-      bookmarksSyncing: false
+      bookmarksSyncing: false,
     }
 
     this.handleLogin = this.handleLogin.bind(this)
@@ -30,14 +30,13 @@ class Settings extends Component {
       micropubToken: store.setting_micropubToken,
       micropubEndpoint: store.setting_micropubEndpoint,
       newPostTemplate: store.setting_newPostTemplate,
-      bookmarkAutoSync: store.setting_bookmarkAutoSync ? true : false
+      bookmarkAutoSync: store.setting_bookmarkAutoSync ? true : false,
     })
 
     browser.runtime.onMessage.addListener((request, sender) => {
       switch (request.action) {
         case 'isSyncing': {
           return Promise.resolve(this.state.bookmarksSyncing)
-          break
         }
         default: {
           break
@@ -53,10 +52,13 @@ class Settings extends Component {
       const url = await micropub.getAuthUrl()
       await browser.storage.local.set({
         setting_tokenEndpoint: micropub.options.tokenEndpoint,
-        setting_micropubEndpoint: micropub.options.micropubEndpoint
+        setting_micropubEndpoint: micropub.options.micropubEndpoint,
       })
       await browser.tabs.create({ url })
     } catch (err) {
+      alert(
+        'Oh dear. It looks like there was an error getting your login data :('
+      )
       console.log('Error creating login tab', err)
     }
   }
@@ -101,20 +103,17 @@ class Settings extends Component {
     return (
       <form>
         {this.renderBasicItem('micropubMe', 'Domain')}
-        {this.state.micropubToken ? (
-          <Fragment>
-            {this.renderBasicItem('micropubEndpoint', 'Micropub endpoint')}
-            {this.renderBasicItem('micropubToken', 'Micropub token')}
-          </Fragment>
-        ) : (
-          <Button
-            disabled={!this.state.micropubMe}
-            onClick={this.handleLogin}
-            mb={3}
-          >
-            Login
-          </Button>
-        )}
+        <Fragment>
+          {this.renderBasicItem('micropubEndpoint', 'Micropub endpoint')}
+          {this.renderBasicItem('micropubToken', 'Micropub token')}
+        </Fragment>
+        <Button
+          disabled={!this.state.micropubMe}
+          onClick={this.handleLogin}
+          mb={3}
+        >
+          {this.state.micropubToken ? 'Refresh token' : 'Login'}
+        </Button>
 
         <Label htmlFor={'newPostTemplate'}>New Post Template</Label>
         <Textarea
@@ -140,7 +139,7 @@ class Settings extends Component {
             checked={this.state.bookmarkAutoSync}
             onClick={e => {
               let update = {
-                setting_bookmarkAutoSync: !this.state.bookmarkAutoSync
+                setting_bookmarkAutoSync: !this.state.bookmarkAutoSync,
               }
               browser.storage.local.set(update)
               this.setState({ bookmarkAutoSync: !this.state.bookmarkAutoSync })
