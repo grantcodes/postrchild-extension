@@ -19,7 +19,7 @@ const basicNode = ({ element: El, ...opts }) => {
     serialize: children => <El>{children}</El>,
     deserialize: (el, next) => ({
       object: 'block',
-      type: opt.name,
+      type: opts.name,
       data: {
         className: el.getAttribute('class'),
       },
