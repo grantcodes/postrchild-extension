@@ -15,9 +15,7 @@ class PostEditor extends Component {
       popoutOpen: false,
       title: '',
       content: '',
-      mf2: {
-        properties: {},
-      },
+
       originalProperties: {},
     }
     this.handleDelete = this.handleDelete.bind(this)
@@ -44,6 +42,11 @@ class PostEditor extends Component {
     }
   }
 
+  mf2 = {
+    type: ['h-entry'],
+    properties: {},
+  }
+
   async handleDelete() {
     if (window.confirm('Are you sure you want to delete this?')) {
       try {
@@ -58,7 +61,7 @@ class PostEditor extends Component {
 
   async handleSubmit() {
     this.setState({ loading: true })
-    let mf2 = this.state.mf2
+    let mf2 = this.mf2
     const title = this.state.title
     const content = this.state.content
     if (title) {
@@ -112,7 +115,7 @@ class PostEditor extends Component {
       const post = await micropub.querySource(window.location.href)
 
       if (post && post.properties) {
-        newState.mf2 = post
+        this.mf2 = post
         newState.originalProperties = Object.assign({}, post.properties)
       }
 
@@ -145,7 +148,7 @@ class PostEditor extends Component {
   }
 
   render() {
-    const shownProperties = Object.keys(this.state.mf2.properties).filter(
+    const shownProperties = Object.keys(this.mf2.properties).filter(
       key => key != 'name' && key != 'content'
     )
     shownProperties.push(
@@ -156,7 +159,7 @@ class PostEditor extends Component {
       'mp-slug'
     )
 
-    const { popoutOpen, mf2, title, content, loading } = this.state
+    const { popoutOpen, title, content, loading } = this.state
     const {
       title: titleEl,
       content: contentEl,
@@ -192,8 +195,8 @@ class PostEditor extends Component {
           onClose={() => this.setState({ popoutOpen: false })}
         >
           <PopoutForm
-            onChange={mf2 => this.setState({ mf2 })}
-            properties={mf2.properties}
+            onChange={mf2 => (this.mf2 = mf2)}
+            properties={this.mf2.properties}
             shownProperties={shownProperties}
           />
         </Popout>

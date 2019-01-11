@@ -13,7 +13,7 @@ class Popout extends Component {
   }
 
   componentWillReceiveProps(newProps) {
-    if (newProps.open != this.state.open) {
+    if (newProps.open !== this.state.open) {
       this.setState({ open: newProps.open })
     }
   }

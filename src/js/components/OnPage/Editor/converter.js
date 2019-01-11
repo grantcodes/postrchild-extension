@@ -9,12 +9,8 @@ const rules = [
     deserialize(el, next) {
       for (const element of allElements) {
         if (element.domRecognizer(el)) {
-          return element.deserialize(el)
+          return element.deserialize(el, next)
         }
-      }
-      const type = nodes[el.tagName.toLowerCase()]
-      if (type) {
-        return type.deserialize(el, next)
       }
     },
     serialize(obj, children) {

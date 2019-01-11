@@ -1,7 +1,7 @@
 import browser from 'webextension-polyfill'
 import React, { Component, Fragment } from 'react'
 import { Group, Button } from 'rebass'
-import { MdClose, MdSettings } from "react-icons/md";
+import { MdClose, MdSettings } from 'react-icons/md'
 import Popout from './Popout'
 import PopoutForm from './PopoutForm'
 import micropub, { uploadMf2FilesToMediaEndpoint } from '../../modules/micropub'
@@ -17,10 +17,6 @@ class PostCreator extends Component {
       editorOpen: true,
       title: '',
       content: '',
-      mf2: {
-        type: ['h-entry'],
-        properties: {},
-      },
     }
 
     this.handleSubmit = this.handleSubmit.bind(this)
@@ -39,22 +35,40 @@ class PostCreator extends Component {
 
       const res = await micropub.query('syndicate-to')
       if (res['syndicate-to']) {
-        this.setState({ syndicationProviders: res['syndicate-to'] })
+        const syndicationProviders = res['syndicate-to']
+        this.setState({ syndicationProviders })
+        if (syndicationProviders && syndicationProviders.length) {
+          this.sidebarProperties.push('mp-syndicate-to')
+        }
       }
     } catch (err) {
       console.log('Error querying micropub endpoint', err)
     }
   }
 
+  mf2 = {
+    type: ['h-entry'],
+    properties: {},
+  }
+
+  sidebarProperties = [
+    'summary',
+    'mp-slug',
+    'visibility',
+    'post-status',
+    'photo',
+    'featured',
+  ]
+
   handleMf2Change(mf2) {
-    this.setState({ mf2: mf2 })
+    this.mf2 = mf2
   }
 
   async handleSubmit() {
     this.setState({ loading: true })
     try {
       const { title, content } = this.state
-      let mf2 = this.state.mf2
+      let mf2 = this.mf2
 
       mf2 = await uploadMf2FilesToMediaEndpoint(mf2)
 
@@ -85,25 +99,9 @@ class PostCreator extends Component {
   }
 
   render() {
-    const {
-      mf2,
-      syndicationProviders,
-      popoutOpen,
-      editorOpen,
-      loading,
-    } = this.state
+    const { syndicationProviders, popoutOpen, editorOpen, loading } = this.state
     const { template } = this.props
-    const sidebarProperties = [
-      'summary',
-      'mp-slug',
-      'visibility',
-      'post-status',
-      'photo',
-      'featured',
-    ]
-    if (syndicationProviders && syndicationProviders.length) {
-      sidebarProperties.push('mp-syndicate-to')
-    }
+
     const {
       title: titleEl,
       content: contentEl,
@@ -131,8 +129,8 @@ class PostCreator extends Component {
           onClose={() => this.setState({ popoutOpen: false })}
         >
           <PopoutForm
-            properties={mf2.properties}
-            shownProperties={sidebarProperties}
+            properties={this.mf2.properties}
+            shownProperties={this.sidebarProperties}
             onChange={this.handleMf2Change}
             syndication={syndicationProviders}
           />

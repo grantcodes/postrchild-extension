@@ -117,12 +117,14 @@ module.exports = {
     // Plugin to bundle the extension
     {
       apply: compiler => {
-        compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
-          webExt.cmd.build({
-            sourceDir: path.join(__dirname, 'build'),
-            artifactsDir: path.join(__dirname, 'build'),
+        if (!devMode) {
+          compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
+            webExt.cmd.build({
+              sourceDir: path.join(__dirname, 'build'),
+              artifactsDir: path.join(__dirname, 'build'),
+            })
           })
-        })
+        }
       },
     },
   ],
