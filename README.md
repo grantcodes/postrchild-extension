@@ -48,11 +48,9 @@ It should have a container with a `h-entry` class, with a `p-name` class element
 
 For example I use something like this for my own site:
 
-```
+```html
 <article class="h-entry post card">
-  <header>
-    <h1 class="p-name post__title"></h1>
-  </header>
+  <header><h1 class="p-name post__title"></h1></header>
   <div class="e-content"></div>
   <footer class=" post__footer">Being written now by Grant Richmond</footer>
 </article>
@@ -63,3 +61,17 @@ For example I use something like this for my own site:
 You can align certain items to a wide or full width if your website supports the styles.
 
 You need to style the `alignfull` and `alignwide` classes. This should be built into WordPress themes with full gutenberg support.
+
+![Photo alignment example](https://grant.codes/media/2019/01/13/alignment.gif)
+
+### Markdown Shortcuts
+
+If you start a paragraph with ### and a space it will turn that block into a h3, if you start with a > you get a blockquote, etc.
+
+![Markdown shortcuts example](https://grant.codes/media/2019/01/13/markdown-shortcuts.gif)
+
+### Mentions
+
+You can @mention IndieWeb people.
+
+![Mention example](https://grant.codes/media/2019/01/13/mentions.gif)
