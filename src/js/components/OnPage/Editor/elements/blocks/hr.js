@@ -1,28 +1,20 @@
 import React from 'react'
-import { MdRemove } from 'react-icons/md'
+import { Remove as HrIcon } from 'styled-icons/material'
 
 export default {
   name: 'hr',
   keywords: ['hr', 'horizontal', 'rule', 'break'],
-  icon: <MdRemove />,
+  icon: <HrIcon />,
   showIcon: false,
-  schema: {
-    isVoid: true,
-  },
-  render: ({ attributes, children }) => <hr {...attributes} />,
-  domRecognizer: el => el.tagName.toLowerCase() === 'hr',
-  serialize: children => <hr />,
-  deserialize: el => ({
-    object: 'block',
+  render: ({ attributes, children, element }) => <hr {...attributes} />,
+  domRecognizer: (el) => el.tagName.toLowerCase() === 'hr',
+  serialize: (children, node) => `<hr />`,
+  deserialize: (el) => ({
     type: 'hr',
-    data: {
-      className: el.getAttribute('class'),
-    },
+    children: [{ text: '' }],
   }),
-  onButtonClick: editor => {
-    editor
-      .moveToEndOfBlock()
-      .insertBlock('hr')
-      .insertBlock('paragraph')
+  onButtonClick: (editor) => {
+    // TODO: Don't think this will work
+    editor.moveToEndOfBlock().insertBlock('hr').insertBlock('paragraph')
   },
 }

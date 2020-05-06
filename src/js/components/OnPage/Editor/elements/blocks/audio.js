@@ -1,81 +1,65 @@
-import React, { Component } from 'react'
-import { MdMusicVideo } from 'react-icons/md'
+import React, { useState, useEffect } from 'react'
+import { useEditor } from 'slate-react'
+import { MusicVideo as AudioIcon } from 'styled-icons/material'
 import micropub from '../../../../../modules/micropub'
+import { updateElement } from '../../helpers'
 
-class Audio extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      uploading: true,
-    }
-  }
+const Audio = ({ attributes, children, element }) => {
+  const editor = useEditor()
+  const [uploading, setUploading] = useState(false)
 
-  async componentDidMount() {
-    const { editor, node } = this.props
-    const file = node.data.get('file')
-    if (file) {
-      try {
-        const fileUrl = await micropub.postMedia(file)
-        let data = node.data.toJS()
-        delete data.file
-        data.src = fileUrl
-        editor.setNodeByKey(node.key, { data })
-      } catch (err) {
-        alert('Error uploading file')
-        console.log('Error uploading file', err)
+  useEffect(() => {
+    const upload = async () => {
+      const file = element.file
+      if (file) {
+        try {
+          setUploading(true)
+          const fileUrl = await micropub.postMedia(file)
+          updateElement(editor, element, { src: fileUrl, file: null })
+        } catch (err) {
+          alert('Error uploading file')
+          console.error('Error uploading file', err)
+        }
+        setUploading(false)
       }
-      this.setState({ uploading: false })
     }
-  }
+    upload()
+  }, [editor, element])
 
-  render() {
-    const { loading } = this.state
-    const { attributes, node } = this.props
-    const data = node.data.toJS()
-    return (
-      <audio
-        {...data}
-        {...attributes}
-        controls={true}
-        style={{ opacity: loading ? 0.5 : 1 }}
-      />
-    )
-  }
+  return (
+    <audio
+      {...attributes}
+      controls={true}
+      src={element.src}
+      style={{ opacity: uploading ? 0.5 : 1 }}
+    />
+  )
 }
 
 export default {
   name: 'audio',
   keywords: ['audio', 'music', 'song'],
-  icon: <MdMusicVideo />,
+  icon: <AudioIcon />,
   showIcon: true,
-  schema: {
-    isVoid: true,
-  },
-  render: props => <Audio {...props} />,
-  domRecognizer: el => el.tagName.toLowerCase() === 'audio',
-  serialize: (children, obj) => {
-    return <audio controls={true} src={obj.data.get('src')} />
-  },
-  deserialize: el => ({
-    object: 'block',
+  render: (props) => <Audio {...props} />,
+  domRecognizer: (el) => el.tagName.toLowerCase() === 'audio',
+  serialize: (children, node) => `<audio controls src="${node.src}"></audio>`,
+  deserialize: (el) => ({
     type: 'audio',
-    data: {
-      src: el.getAttribute('src'),
-    },
+    src: el.getAttribute('src'),
+    children: [{ text: '' }],
   }),
-  onButtonClick: editor => {
+  onButtonClick: (editor) => {
     const el = document.createElement('input')
     el.type = 'file'
     el.accept = 'audio/*'
     el.click()
-    el.onchange = e => {
+    el.onchange = (e) => {
       for (const file of el.files) {
         const audioBlock = {
           type: 'audio',
-          data: {
-            file,
-            src: URL.createObjectURL(file),
-          },
+          file,
+          src: URL.createObjectURL(file),
         }
 
         const { value } = editor

@@ -1,17 +1,17 @@
 import React, { Fragment } from 'react'
 import {
-  MdTitle,
-  MdFormatListBulleted,
-  MdTextFormat,
-  MdFormatQuote,
-  MdFormatListNumbered,
-  MdCode,
-} from 'react-icons/md'
+  Title,
+  FormatListBulleted,
+  TextFormat,
+  FormatQuote,
+  FormatListNumbered,
+  Code,
+} from 'styled-icons/material'
 import basicNode from './basic'
 
 const HeadingIcon = ({ level }) => (
   <Fragment>
-    <MdTitle />
+    <Title />
     <span
       style={{
         fontSize: 11,
@@ -19,6 +19,7 @@ const HeadingIcon = ({ level }) => (
         lineHeight: 1,
         marginLeft: -4,
         verticalAlign: 'text-bottom',
+        position: 'absolute',
       }}
     >
       {level}
@@ -29,7 +30,7 @@ const HeadingIcon = ({ level }) => (
 const p = basicNode({
   name: 'paragraph',
   element: 'p',
-  icon: <MdTextFormat />,
+  icon: <TextFormat />,
 })
 
 const h1 = basicNode({
@@ -73,26 +74,26 @@ const h6 = basicNode({
 const blockquote = basicNode({
   name: 'blockquote',
   element: 'blockquote',
-  icon: <MdFormatQuote />,
+  icon: <FormatQuote />,
 })
 
 const ul = basicNode({
   name: 'unordered-list',
   element: 'ul',
-  icon: <MdFormatListBulleted />,
+  icon: <FormatListBulleted />,
   showIcon: true,
 })
 
 const ol = basicNode({
   name: 'ordered-list',
   element: 'ol',
-  icon: <MdFormatListNumbered />,
+  icon: <FormatListNumbered />,
 })
 
 const li = basicNode({
   name: 'list-item',
   element: 'li',
-  icon: <MdFormatListBulleted />,
+  icon: <FormatListBulleted />,
 })
 
 const pre = basicNode({
@@ -102,8 +103,8 @@ const pre = basicNode({
       <code>{children}</code>
     </pre>
   ),
-  domRecognizer: el => el.tagName.toLowerCase() === 'pre',
-  icon: <MdCode />,
+  domRecognizer: (el) => el.tagName.toLowerCase() === 'pre',
+  icon: <Code />,
 })
 
 export default [p, h1, h2, h3, h4, h5, h6, blockquote, ul, ol, li, pre]

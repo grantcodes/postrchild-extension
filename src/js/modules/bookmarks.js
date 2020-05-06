@@ -29,12 +29,12 @@ export default class Bookmark {
       }
       if (data.folder) {
         let cats = []
-        data.folder.split('/').forEach(cat => cats.push(cat))
+        data.folder.split('/').forEach((cat) => cats.push(cat))
         if (data.folder.indexOf('/') > -1) {
           cats.push(data.folder)
         }
         cats = cats.filter(
-          cat => defaultFolders.indexOf(cat.toLowerCase()) === -1
+          (cat) => defaultFolders.indexOf(cat.toLowerCase()) === -1
         )
         if (cats.length) {
           this.mf2.properties.category = cats
@@ -59,7 +59,7 @@ export default class Bookmark {
       }
       if (data.properties.category && data.properties.category[0]) {
         this.browser.folder =
-          data.properties.category.find(cat => cat.indexOf('/') > -1) ||
+          data.properties.category.find((cat) => cat.indexOf('/') > -1) ||
           data.properties.category[0]
       }
     } else {
@@ -81,14 +81,14 @@ export default class Bookmark {
     if (folder.indexOf('/') > -1) {
       cats.push(folder)
     }
-    folder.split('/').forEach(cat => cats.push(cat))
+    folder.split('/').forEach((cat) => cats.push(cat))
     if (cats.length) {
       this.mf2.properties.category = cats
     }
   }
 
   async createLocalFolder() {
-    const flatten = array => {
+    const flatten = (array) => {
       let result = []
       for (const a of array) {
         result.push(a)
@@ -99,13 +99,13 @@ export default class Bookmark {
       return result
     }
 
-    const folders = this.browser.folder.split('/').filter(folder => folder)
+    const folders = this.browser.folder.split('/').filter((folder) => folder)
     if (!folders || !folders.length) {
       return true
     }
 
     const tree = await browser.bookmarks.getTree()
-    let existingFolders = flatten(tree).filter(item =>
+    let existingFolders = flatten(tree).filter((item) =>
       Array.isArray(item.children)
     )
 
@@ -118,7 +118,7 @@ export default class Bookmark {
         newFolder.parentId = parentId
       }
 
-      const existingFolder = existingFolders.find(folder => {
+      const existingFolder = existingFolders.find((folder) => {
         const oldTitle = folder.title.trim().toLowerCase()
         const newTitle = name.trim().toLowerCase()
         if (parentId && oldTitle == newTitle && folder.parentId == parentId) {
@@ -141,7 +141,7 @@ export default class Bookmark {
       }
     }
 
-    const createFolders = async folders => {
+    const createFolders = async (folders) => {
       let parentId = null
       for (const folder of folders) {
         parentId = await createFolder(folder, parentId)
@@ -184,7 +184,7 @@ export const getLocalFolders = async () => {
   const tree = await browser.bookmarks.getTree()
   let folders = []
   const flatten = (items, parentName = null) => {
-    const childFolders = items.filter(item => item.children)
+    const childFolders = items.filter((item) => item.children)
     if (childFolders) {
       for (const folder of childFolders) {
         if (
@@ -228,7 +228,7 @@ export const getLocal = async () => {
   }
   flatten(tree)
   return bookmarks.filter(
-    bookmark =>
+    (bookmark) =>
       !bookmark.browser.url.startsWith('javascript:') &&
       bookmark.browser.folder.toLowerCase().trim() !== 'trash'
   )
@@ -256,7 +256,7 @@ export const getOnline = async () => {
     return []
   }
   const data = await res.json()
-  return data.items.map(data => new Bookmark(data))
+  return data.items.map((data) => new Bookmark(data))
 }
 
 // NOTE: This deletes all online bookmarks, should probably never be used except for testing
@@ -278,7 +278,7 @@ export const sync = async () => {
     for (const browserBookmark of browserBookmarks) {
       // Search to see if this bookmark exists on the site
       const onlineBookmark = onlineBookmarks.find(
-        bookmark => bookmark.browser.url == browserBookmark.browser.url
+        (bookmark) => bookmark.browser.url == browserBookmark.browser.url
       )
       if (onlineBookmark) {
         // There is a bookmark online, so check if the categories or title should be updated
@@ -320,7 +320,7 @@ export const sync = async () => {
   async function makeLocalBookmarks(onlineBookmarks) {
     for (const onlineBookmark of onlineBookmarks) {
       const browserBookmark = browserBookmarks.find(
-        bookmark => onlineBookmark.browser.url == bookmark.browser.url
+        (bookmark) => onlineBookmark.browser.url == bookmark.browser.url
       )
       if (!browserBookmark) {
         console.log('Creating local bookmark', onlineBookmark.browser)

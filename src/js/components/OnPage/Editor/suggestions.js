@@ -1,9 +1,34 @@
 import React from 'react'
+import styled from 'styled-components'
 // import emojiKeywords from 'emojis-keywords'
 // import emojiList from 'emojis-list'
 import SuggestionsPlugin from './slate-suggestions/index'
-import { Box, Avatar, Text } from 'rebass'
 import { blocks } from './elements/index'
+
+const Mention = styled.div`
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-content: center;
+  white-space: nowrap;
+
+  img {
+    display: block;
+    margin-right: 10px;
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    object-position: center;
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+
+  span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+`
 
 function getInput(value, regex = /([\w]*)/) {
   if (!value.startText) {
@@ -15,17 +40,15 @@ function getInput(value, regex = /([\w]*)/) {
   return result === null ? null : result[1]
 }
 
-let users = []
-
 const getHCards = async () => {
   const res = await fetch('https://indieweb-directory.glitch.me/api/hcards')
   const cards = await res.json()
   return cards
 }
 
-;(async () => {
+const getMentionSuggestions = async () => {
   const hCards = await getHCards()
-  users = hCards.map((hCard, i) => ({
+  const users = hCards.map((hCard, i) => ({
     hCard,
     key: `hcard-${i}`,
     value: `${hCard.properties.name[0]} ${hCard.properties.url[0]}`,
@@ -36,34 +59,27 @@ const getHCards = async () => {
       />
     ),
   }))
-})()
+  return users
+}
 
 const MentionPreview = ({ name, photo }) => (
-  <Box>
-    <Avatar
-      size={24}
-      src={photo}
-      style={{
-        display: 'inline-block',
-        verticalAlign: 'middle',
-        marginRight: 10,
-      }}
-    />
-    <Text style={{ display: 'inline-block', verticalAlign: 'middle' }}>
-      {name}
-    </Text>
-  </Box>
+  <Mention>
+    <img width={24} height={24} src={photo} />
+    <span>{name}</span>
+  </Mention>
 )
 
 const mentionsPlugin = SuggestionsPlugin({
   trigger: '@',
   capture: /@([\w]*)/,
-  suggestions: search =>
-    search
-      ? users.filter(user =>
+  suggestions: async (search) => {
+    const users = await getMentionSuggestions()
+    return search
+      ? users.filter((user) =>
           user.value.toLowerCase().includes(search.toLowerCase())
         )
-      : users,
+      : users
+  },
   onEnter: (suggestion, editor) => {
     const value = editor.value
     const inputValue = getInput(value, /@([\w]*)/)
@@ -141,13 +157,16 @@ for (const blockKey in blocks) {
 const blockPlugin = SuggestionsPlugin({
   trigger: '/',
   capture: /\/([\w]*)/,
-  suggestions: search =>
+  suggestions: (search) =>
     search
-      ? blockSuggestions.filter(block =>
-          block.keywords.find(keyword =>
+      ? blockSuggestions.filter((block) => {
+          if (!block.keywords) {
+            return false
+          }
+          return block.keywords.find((keyword) =>
             keyword.toLowerCase().includes(search.toLowerCase())
           )
-        )
+        })
       : blockSuggestions,
   startOfParagraph: true,
   onEnter: (suggestion, editor) => {

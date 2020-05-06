@@ -5,7 +5,9 @@ import { render } from 'react-dom'
 import Theme from './components/Theme'
 import NewPost from './components/OnPage/NewPost'
 import EditPost from './components/OnPage/EditPost'
-import { getNewPostTemplate } from './modules/template-utils'
+import logger from './modules/logger'
+import notification from './modules/notification'
+import { getNewPostTemplate, getEditorElements } from './modules/template-utils'
 
 if (module.hot) {
   __webpack_public_path__ = 'http://localhost:3000/'
@@ -14,6 +16,7 @@ if (module.hot) {
 const createOnPageContainer = () => {
   const existing = document.getElementById('postrchild-extension-app-container')
   if (existing) {
+    logger.log('Existing container element', existing)
     return false
   }
   const onPageContainer = document.createElement('div')
@@ -28,24 +31,47 @@ const createOnPageContainer = () => {
 }
 
 const loadNew = async () => {
-  const newPostContainer = createOnPageContainer()
-  if (newPostContainer) {
-    const template = await getNewPostTemplate()
-    render(
-      <Theme>
-        <NewPost template={template} />
-      </Theme>,
-      newPostContainer
-    )
+  // TODO: Store this url so that it can be used with a quick action
+  try {
+    const newPostContainer = createOnPageContainer()
+    logger.log('Got new post container', newPostContainer)
+    if (newPostContainer) {
+      logger.log('trying to get template elements')
+      // Get and clear template elements.
+      const template = await getNewPostTemplate()
+      const els = getEditorElements(template)
+
+      for (const key in els) {
+        if (els.hasOwnProperty(key)) {
+          const el = els[key]
+          if (el && el.innerHTML) {
+            el.innerHTML = ''
+          }
+        }
+      }
+
+      render(
+        <Theme>
+          <NewPost
+            titleEl={els.title}
+            contentEl={els.content}
+            photoEl={els.photo}
+          />
+        </Theme>,
+        newPostContainer
+      )
+    }
+  } catch (err) {
+    logger.warn('Error injecting new post editor', err)
   }
 }
-
 const loadEdit = async () => {
   const editorContainer = createOnPageContainer()
   if (editorContainer) {
+    logger.log('Loading edit post')
     render(
       <Theme>
-        <EditPost post={document.getElementsByClassName('h-entry')[0]} />
+        <EditPost postEl={document.getElementsByClassName('h-entry')[0]} />
       </Theme>,
       editorContainer
     )
@@ -53,9 +79,11 @@ const loadEdit = async () => {
 }
 
 const isUserSite = async () => {
+  // Load editor everywhere when testing.
   if (process.env.NODE_ENV === 'development') {
     return true
   }
+  // Otherwise only load the editor on the user site.
   const store = await browser.runtime.sendMessage({
     action: 'getSettings',
   })
@@ -98,36 +126,46 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
 })
 
 const init = async () => {
-  const store = await browser.runtime.sendMessage({
-    action: 'getSettings',
-  })
   // Complete auth if on micropub redirect page
-  if (
-    window.location.href.startsWith('https://postrchild.com/auth') &&
-    !store.setting_micropubToken
-  ) {
-    const params = new URLSearchParams(window.location.search)
-    const code = params.get('code')
-    const state = params.get('state')
+  if (window.location.href.startsWith('https://postrchild.com/auth')) {
+    const store = await browser.runtime.sendMessage({
+      action: 'getSettings',
+    })
+    if (!store.setting_micropubToken) {
+      const params = new URLSearchParams(window.location.search)
+      const code = params.get('code')
+      const state = params.get('state')
 
-    try {
-      await browser.runtime.sendMessage({
-        action: 'getToken',
-        state,
-        code,
-      })
-      alert("Ok you're all set up. Visit your website to start posting")
-      await browser.runtime.sendMessage({ action: 'closeTab' })
-    } catch (err) {
-      console.log('Error getting access token', err)
-      alert('Uh oh, there was an error getting the access token')
+      try {
+        notification({ message: 'Getting your access token...' })
+        await browser.runtime.sendMessage({
+          action: 'getToken',
+          state,
+          code,
+        })
+        notification({
+          message: "Ok you're all set up. Visit your website to start posting.",
+        })
+        await browser.runtime.sendMessage({ action: 'closeTab' })
+      } catch (err) {
+        logger.error('[Error getting access token]', err)
+        notification({
+          title: 'Uh oh!',
+          message: 'There was an error getting the access token',
+        })
+      }
     }
   }
+
   // Autoload new post if there is a template for it on the page
   const templateEl = document.getElementsByClassName('postrchild-template')
   if ((await isUserSite()) && templateEl.length === 1) {
+    logger.log(
+      'Single postrchild-template on user site, loading new post editor'
+    )
     loadNew()
   }
 }
 
-init()
+window.onload = init
+// init()

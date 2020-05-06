@@ -1,23 +1,44 @@
 import React from 'react'
-import { Banner } from 'rebass'
+import styled from 'styled-components'
 import icon from '../../img/icon-128.png'
-const Header = () => {
-  return (
-    <Banner
-      p={3}
-      color="white"
-      bg="blue"
-      style={{
-        minHeight: 0,
-        backgroundImage: 'linear-gradient(25deg, #6142a5, #df99d8)'
-      }}
-    >
-      <img
-        src={icon}
-        style={{ display: 'inline-block', width: 40, height: 40 }}
-      />
-    </Banner>
-  )
-}
 
-export default Header
+const Header = styled.header`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+  color: ${(props) => props.theme.colors.background};
+  background-image: linear-gradient(
+    25deg,
+    ${(props) => props.theme.colors.main},
+    ${(props) => props.theme.colors.alt}
+  );
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+`
+
+const Logo = styled.img`
+  display: block;
+  width: 25px;
+  height: 25px;
+  margin-right: 10px;
+  margin-left: -25px;
+`
+
+const Title = styled.h1`
+  font-weight: bold;
+  font-size: 16px;
+  color: inherit;
+  margin: 0;
+  line-height: 1;
+`
+
+export default () => (
+  <Header>
+    <Logo src={icon} />
+    <Title>PostrChild</Title>
+  </Header>
+)

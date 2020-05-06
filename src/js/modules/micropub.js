@@ -9,17 +9,19 @@ const micropub = new Micropub({
 
 browser.runtime
   .sendMessage({ action: 'getSettings' })
-  .then(store => {
+  .then((store) => {
     micropub.options.me = store.setting_micropubMe
     micropub.options.token = store.setting_micropubToken
     micropub.options.tokenEndpoint = store.setting_tokenEndpoint
     micropub.options.micropubEndpoint = store.setting_micropubEndpoint
   })
-  .catch(err => console.log('Error getting micropub options from browser', err))
+  .catch((err) =>
+    console.warn('[Error getting micropub options from browser]', err)
+  )
 
 browser.storage.onChanged.addListener((changes, area) => {
   if (area == 'local') {
-    Object.keys(changes).forEach(key => {
+    Object.keys(changes).forEach((key) => {
       const value = changes[key].newValue
       if (key.indexOf('setting_') === 0) {
         key = key.replace('setting_', '')
@@ -34,7 +36,7 @@ browser.storage.onChanged.addListener((changes, area) => {
  *
  * @param {object} mf2 Microformats 2 object with potential File properties
  */
-const uploadMf2FilesToMediaEndpoint = async mf2 => {
+const uploadMf2FilesToMediaEndpoint = async (mf2) => {
   for (const key in mf2.properties) {
     if (mf2.properties.hasOwnProperty(key)) {
       const values = mf2.properties[key]
@@ -52,7 +54,7 @@ const uploadMf2FilesToMediaEndpoint = async mf2 => {
             }
             mf2.properties[key][propertyIndex] = fileUrl
           } catch (err) {
-            console.log('Error uploading to media endpoint', err)
+            console.log('[Error uploading to media endpoint]', err)
             throw Error('Error uploading files to media endpoint')
           }
         }

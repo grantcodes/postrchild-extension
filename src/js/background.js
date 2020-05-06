@@ -29,15 +29,10 @@ browser.bookmarks.onCreated.addListener(async (id, bookmark) => {
 
       mf2Bookmarks[bookmark.browser.id] = url
       if (typeof url === 'string') {
-        notification(url, 'Micropub bookmark created')
+        notification({ message: url, title: 'Micropub bookmark created' })
       } else {
-        notification('Micropub bookmark created')
+        notification({ message: 'Micropub bookmark created' })
       }
-
-      // .catch(err => {
-      //   console.log('Error creating micropub bookmark', err)
-      //   notification('Error creating micropub bookmark', 'Error')
-      // })
     } else {
       console.log('Bookmarks are currently syncing so this should be ignored')
     }
@@ -66,24 +61,23 @@ browser.bookmarks.onCreated.addListener(async (id, bookmark) => {
 browser.bookmarks.onMoved.addListener(async (id, bookmark) => {
   const autoSyncEnabled = shouldAutoPushBookmarks()
   if (autoSyncEnabled && mf2Bookmarks[id]) {
-    bookmark = new Bookmark(bookmark)
-    const update = {
-      replace: {
-        category: bookmark.mf2.properties.category,
-      },
+    try {
+      bookmark = new Bookmark(bookmark)
+      const update = {
+        replace: {
+          category: bookmark.mf2.properties.category,
+        },
+      }
+      const url = await micropub.update(mf2Bookmarks[id], update)
+      if (url) {
+        notification({
+          title: 'Moved Bookmark',
+          message: 'Successfully updated bookmark post categories',
+        })
+      }
+    } catch (err) {
+      console.error('[Error moving bookmark]', err)
     }
-    const url = await micropub.update(mf2Bookmarks[id], update)
-    if (url) {
-      notification(
-        'Successfully updated bookmark post categories',
-        'Moved Bookmark'
-      )
-    }
-
-    // .catch(err => {
-    //   console.log(err)
-    //   errorNotification(err.message)
-    // })
   }
 })
 
@@ -110,6 +104,10 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
       }
 
       throw new Error('Error with code or state params')
+    }
+    case 'notification': {
+      const { title, message } = request
+      notification({ title, message })
     }
     default: {
       break
@@ -150,34 +148,37 @@ async function initializePageAction(tab) {
       })
     }
   } catch (err) {
-    console.log('Error initializing page action', err)
+    console.error('[Error initializing page action]', err)
   }
 }
 
 // On first load check all tabs to enable the page action
-browser.tabs.query({}).then(tabs => {
+browser.tabs.query({}).then((tabs) => {
   for (const tab of tabs) {
-    initializePageAction(tab)
+    // initializePageAction(tab)
   }
 })
 
 // Whenever a tab is updated we need to check if the page action should be shown
 browser.tabs.onUpdated.addListener((id, changeInfo, tab) => {
-  initializePageAction(tab)
+  // initializePageAction(tab)
 })
 
 // Watches for a click on the page action button and either loads the new post creator or editor
-browser.pageAction.onClicked.addListener(async tab => {
-  const actionTitle = await browser.pageAction.getTitle({ tabId: tab.id })
-  switch (actionTitle) {
-    case 'Edit Post':
-      browser.tabs.sendMessage(tab.id, { action: 'showEditor' })
-      break
-    case 'New Post':
-      browser.tabs.sendMessage(tab.id, { action: 'showNewPost' })
-      break
-    default:
-      browser.runtime.openOptionsPage()
-      break
-  }
-})
+if (browser && browser.pageAction && browser.pageAction.onClicked) {
+  browser.pageAction.onClicked.addListener(async (tab) => {
+    browser.pageAction.openPopup()
+    // const actionTitle = await browser.pageAction.getTitle({ tabId: tab.id })
+    // console.log('checking actions')
+    // switch (actionTitle) {
+    //   case 'Edit Post':
+    //     console.log('sending show editor')
+    //     browser.tabs.sendMessage(tab.id, { action: 'showEditor' })
+    //     break
+    //   case 'New Post':
+    //     console.log('sending show new')
+    //     browser.tabs.sendMessage(tab.id, { action: 'showNewPost' })
+    //     break
+    // }
+  })
+}

@@ -1,33 +1,34 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { Box, Label, Input, Button, Select, Textarea } from "rebass";
-import Mf2Editor from "micropub-client-editor";
+import React from 'react'
+import PropTypes from 'prop-types'
+import { AutoForm } from '@postrchild/editor-base'
+import { Input, Label, Button } from '../util'
+
+const Select = (props) => <Input as="select" {...props} />
+const Textarea = (props) => <Input as="textarea" {...props} />
 
 const PopoutForm = ({
   onChange,
-  shownProperties,
   properties = {},
   syndication = [],
-  richContent = true
+  richContent = true,
 }) => (
-  <Mf2Editor
+  <AutoForm
     onChange={onChange}
-    shownProperties={shownProperties}
     properties={properties}
     syndication={syndication}
     richContent={richContent}
-    divComponent={Box}
-    labelComponent={props => <Label color="black" mb={1} {...props} />}
-    inputComponent={props => <Input mb={3} {...props} />}
-    buttonComponent={props => <Button mb={3} {...props} />}
-    selectComponent={props => <Select mb={3} {...props} />}
-    textareaComponent={props => <Textarea mb={3} {...props} />}
+    // divComponent={Box}
+    labelComponent={Label}
+    inputComponent={Input}
+    buttonComponent={Button}
+    selectComponent={Select}
+    textareaComponent={Textarea}
   />
-);
+)
 
 PopoutForm.propTypes = {
   onChange: PropTypes.func.isRequired,
-  shownProperties: PropTypes.array
-};
+  shownProperties: PropTypes.array,
+}
 
-export default PopoutForm;
+export default PopoutForm

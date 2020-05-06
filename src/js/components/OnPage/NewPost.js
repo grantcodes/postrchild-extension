@@ -1,75 +1,94 @@
 import browser from 'webextension-polyfill'
-import React, { Component, Fragment } from 'react'
-import { Group, Button } from 'rebass'
-import { MdClose, MdSettings } from 'react-icons/md'
+import React, { Fragment, useState, useEffect } from 'react'
 import Popout from './Popout'
 import PopoutForm from './PopoutForm'
+import FloatingActions from './FloatingActions'
+import EditorPortal from './EditorPortal'
 import micropub, { uploadMf2FilesToMediaEndpoint } from '../../modules/micropub'
 import * as templateUtils from '../../modules/template-utils'
-import EditorPortal from './EditorPortal'
+import notification from '../../modules/notification'
 
-class PostCreator extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      loading: false,
-      popoutOpen: false,
-      editorOpen: true,
-      title: '',
-      content: '',
-    }
+const baseProperties = {
+  'mp-slug': [],
+  summary: [],
+  featured: [],
+  photo: [],
+  'mp-syndicate-to': [],
+  visibility: [],
+  'post-status': [],
+}
 
-    this.handleSubmit = this.handleSubmit.bind(this)
-    this.handleCancel = this.handleCancel.bind(this)
-    this.handleMf2Change = this.handleMf2Change.bind(this)
-  }
+const NewPost = ({ titleEl, contentEl, photoEl }) => {
+  const [initialLoad, setInitialLoad] = useState(true)
+  const [loading, setLoading] = useState(true)
+  const [popoutOpen, setPopoutOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [content, setContent] = useState('')
+  const [properties, setProperties] = useState(baseProperties)
+  const [syndicationProviders, setSyndicationProviders] = useState([])
 
-  async componentDidMount() {
-    try {
-      if (!micropub.options.mediaEndpoint) {
-        const config = await micropub.query('config')
-        if (config['media-endpoint']) {
-          micropub.options.mediaEndpoint = config['media-endpoint']
+  // TODO: Initial loading stuff can probably use react suspense
+  useEffect(() => {
+    const didMount = async () => {
+      try {
+        if (!micropub.options.mediaEndpoint) {
+          const config = await micropub.query('config')
+          if (config['media-endpoint']) {
+            micropub.options.mediaEndpoint = config['media-endpoint']
+          }
         }
-      }
 
-      const res = await micropub.query('syndicate-to')
-      if (res['syndicate-to']) {
-        const syndicationProviders = res['syndicate-to']
-        this.setState({ syndicationProviders })
-        if (syndicationProviders && syndicationProviders.length) {
-          this.sidebarProperties.push('mp-syndicate-to')
+        const res = await micropub.query('syndicate-to')
+        if (res['syndicate-to']) {
+          const syndicationProviders = res['syndicate-to']
+          setSyndicationProviders(syndicationProviders)
         }
+
+        const store = await browser.storage.local.get('newPostCache')
+        if (store.newPostCache) {
+          console.log('[Loading from cache]', store.newPostCache)
+          if (store.newPostCache.title) {
+            setTitle(store.newPostCache.title)
+          }
+          if (
+            store.newPostCache.content &&
+            store.newPostCache.content !== '<p></p>'
+          ) {
+            setContent(store.newPostCache.content)
+          }
+          if (store.newPostCache.properties) {
+            setProperties(store.newPostCache.properties)
+          }
+        }
+      } catch (err) {
+        console.warn('[Error querying micropub endpoint]', err)
       }
-    } catch (err) {
-      console.log('Error querying micropub endpoint', err)
+      setInitialLoad(false)
+      setLoading(false)
     }
-  }
+    didMount()
+  }, [])
 
-  mf2 = {
-    type: ['h-entry'],
-    properties: {},
-  }
+  useEffect(() => {
+    if (
+      title ||
+      (content && content !== '<p></p>') ||
+      properties !== baseProperties
+    ) {
+      browser.storage.local.set({
+        newPostCache: {
+          title,
+          content,
+          properties,
+        },
+      })
+    }
+  }, [properties, content, title])
 
-  sidebarProperties = [
-    'summary',
-    'mp-slug',
-    'visibility',
-    'post-status',
-    'photo',
-    'featured',
-  ]
-
-  handleMf2Change(mf2) {
-    this.mf2 = mf2
-  }
-
-  async handleSubmit() {
-    this.setState({ loading: true })
+  const handleSubmit = async () => {
+    setLoading(true)
     try {
-      const { title, content } = this.state
-      let mf2 = this.mf2
-
+      let mf2 = { type: ['h-entry'], properties: { ...properties } }
       mf2 = await uploadMf2FilesToMediaEndpoint(mf2)
 
       if (title) {
@@ -80,80 +99,75 @@ class PostCreator extends Component {
         mf2.properties.content = [{ html: content }]
       }
 
+      for (const key in mf2.properties) {
+        if (mf2.properties.hasOwnProperty(key)) {
+          const value = mf2.properties[key]
+          if (!Array.isArray(value) || value.length === 0) {
+            // Empty or bad property
+            delete mf2.properties[key]
+          }
+        }
+      }
+
       const url = await micropub.create(mf2)
+
+      // Clear cache
+      browser.storage.local.remove('newPostCache')
+
       if (typeof url == 'string') {
         window.location.href = url
       } else {
-        alert('Unable to get the url of your new post')
+        notification({ message: 'Unable to get the url of your new post' })
         window.location.reload()
       }
     } catch (err) {
-      console.log('Error creating post', err)
-      alert('Error creating new post: ' + err.message)
+      console.error('[Error creating post]', err)
+      notification({ title: 'Error creating new post', message: err.message })
     }
-    this.setState({ loading: false })
+    setLoading(false)
   }
 
-  handleCancel() {
-    window.location.reload()
-  }
+  return (
+    <Fragment>
+      <FloatingActions
+        loading={loading || initialLoad}
+        onPublish={handleSubmit}
+        onClose={async () => {
+          await browser.storage.local.remove('newPostCache')
+          window.location.reload()
+        }}
+        onOptions={() => setPopoutOpen(true)}
+      />
 
-  render() {
-    const { syndicationProviders, popoutOpen, editorOpen, loading } = this.state
-    const { template } = this.props
+      {!initialLoad && (
+        <Fragment>
+          <Popout open={popoutOpen} onClose={() => setPopoutOpen(false)}>
+            <PopoutForm
+              properties={properties}
+              onChange={setProperties}
+              syndication={syndicationProviders}
+            />
+          </Popout>
 
-    const {
-      title: titleEl,
-      content: contentEl,
-      photo: photoEl,
-    } = templateUtils.getEditorElements(template)
-    return (
-      <Fragment>
-        <Group>
-          <Button onClick={this.handleSubmit} disabled={loading}>
-            Publish
-          </Button>
-          <Button
-            onClick={() => this.setState({ popoutOpen: true })}
-            title="Post options"
-            disabled={loading}
-          >
-            <MdSettings />
-          </Button>
-          <Button onClick={this.handleCancel} title="Cancel" disabled={loading}>
-            <MdClose />
-          </Button>
-        </Group>
-        <Popout
-          open={popoutOpen}
-          onClose={() => this.setState({ popoutOpen: false })}
-        >
-          <PopoutForm
-            properties={this.mf2.properties}
-            shownProperties={this.sidebarProperties}
-            onChange={this.handleMf2Change}
-            syndication={syndicationProviders}
+          <EditorPortal
+            el={titleEl}
+            onChange={setTitle}
+            placeholder="Title..."
+            rich={false}
+            // value={title}
           />
-        </Popout>
-        {editorOpen && (
-          <Fragment>
-            <EditorPortal
-              el={titleEl}
-              onChange={title => this.setState({ title })}
-              placeholder="Title..."
-              rich={false}
-            />
 
-            <EditorPortal
-              el={contentEl}
-              onChange={content => this.setState({ content })}
-              autoFocus
-            />
-          </Fragment>
-        )}
-      </Fragment>
-    )
-  }
+          <EditorPortal
+            el={contentEl}
+            onChange={setContent}
+            // value={content}
+            rich={true}
+            autoFocus
+          />
+        </Fragment>
+      )}
+    </Fragment>
+  )
 }
 
-export default PostCreator
+export default NewPost

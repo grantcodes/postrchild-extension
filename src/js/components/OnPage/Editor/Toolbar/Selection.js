@@ -1,47 +1,51 @@
-import React, { Component } from 'react'
-import { Button } from 'rebass'
+import React from 'react'
+import { Editor, Range } from 'slate'
+import { ReactEditor, useSlate } from 'slate-react'
 import Floater from './Floater'
+import ButtonGroup from '../../ButtonGroup'
+import Button from '../../../util/Button'
 import { marks, nodes, inlines } from '../elements/index'
+import { isBlockActive } from '../helpers'
 
 const allElements = [...marks, ...nodes, ...inlines]
 
-class SelectionToolbar extends Component {
-  hasElement = type => {
-    const { editor } = this.props
-    if (!editor) {
-      return null
-    }
-    const { value } = editor
-    return (
-      value.inlines.some(inline => inline.type == type) ||
-      value.activeMarks.some(mark => mark.type == type) ||
-      value.blocks.some(node => node.type == type)
-    )
+const SelectionToolbar = () => {
+  const editor = useSlate()
+
+  const { selection } = editor
+
+  // TODO: Selection is messed up in firefox
+
+  if (
+    !selection ||
+    !ReactEditor.isFocused(editor) ||
+    Range.isCollapsed(selection) ||
+    Editor.string(editor, selection) === ''
+  ) {
+    return null
   }
 
-  render() {
-    const { position, editor } = this.props
-    return (
-      <Floater position={position}>
+  return (
+    <Floater>
+      <ButtonGroup>
         {allElements
-          .filter(element => element.showIcon)
-          .map(element => {
-            return (
-              <Button
-                key={`toolbar-button-${element.name}`}
-                bg={this.hasElement(element.name) ? 'blue' : 'black'}
-                onMouseDown={e => {
-                  e.preventDefault()
-                  element.onButtonClick(editor)
-                }}
-              >
-                {element.icon}
-              </Button>
-            )
-          })}
-      </Floater>
-    )
-  }
+          .filter((element) => element.showIcon)
+          .map((element) => (
+            <Button
+              key={`toolbar-button-${element.name}`}
+              selected={isBlockActive(editor, element.name)}
+              // selected={false}
+              onClick={(e) => {
+                e.preventDefault()
+                element.onButtonClick(editor)
+              }}
+            >
+              {element.icon}
+            </Button>
+          ))}
+      </ButtonGroup>
+    </Floater>
+  )
 }
 
 export default SelectionToolbar

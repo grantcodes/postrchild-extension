@@ -1,7 +1,7 @@
 const webpack = require('webpack')
 const path = require('path')
 const webExt = require('web-ext').default
-const CleanWebpackPlugin = require('clean-webpack-plugin')
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const WriteFilePlugin = require('write-file-webpack-plugin')
@@ -23,7 +23,7 @@ var fileExtensions = [
   'woff2',
 ]
 
-module.exports = {
+const config = {
   entry: {
     popup: path.join(__dirname, 'src', 'js', 'popup.js'),
     onpage: path.join(__dirname, 'src', 'js', 'onpage.js'),
@@ -65,7 +65,7 @@ module.exports = {
   resolve: {
     alias: alias,
     extensions: fileExtensions
-      .map(extension => '.' + extension)
+      .map((extension) => '.' + extension)
       .concat(['.jsx', '.js', '.css']),
   },
   devServer: {
@@ -74,10 +74,10 @@ module.exports = {
     headers: { 'Access-Control-Allow-Origin': '*' },
     port: 3000,
     disableHostCheck: true,
+    writeToDisk: true,
   },
   plugins: [
     // clean the build folder
-    new CleanWebpackPlugin(['build']),
     new CopyWebpackPlugin([
       // Copy these files to comply with some extension store rules
       'README.md',
@@ -85,7 +85,7 @@ module.exports = {
       'package-lock.json',
       {
         from: 'src/manifest.json',
-        transform: function(content, path) {
+        transform: function (content, path) {
           // generates the manifest file using the package.json informations
           return Buffer.from(
             JSON.stringify({
@@ -116,7 +116,7 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin(),
     // Plugin to bundle the extension
     {
-      apply: compiler => {
+      apply: (compiler) => {
         if (!devMode) {
           compiler.hooks.afterEmit.tap('AfterEmitPlugin', () => {
             webExt.cmd.build({
@@ -129,3 +129,13 @@ module.exports = {
     },
   ],
 }
+
+if (!devMode) {
+  config.plugins.unshift(new CleanWebpackPlugin())
+}
+
+console.log(
+  `Starting PostrChild build in ${devMode ? 'dev' : 'production'} mode`
+)
+
+module.exports = config

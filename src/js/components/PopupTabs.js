@@ -1,51 +1,69 @@
-import React, { Component, Fragment } from "react";
-import { Box, Tabs, Tab } from "rebass";
+import React, { Fragment, useState } from 'react'
+import Button from './util/Button'
+import styled from 'styled-components'
 
-class PopupTabs extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      tab: 0
-    };
-    this.handleClick = this.handleClick.bind(this);
+const Tabs = styled.nav`
+  display: flex;
+  justify-content: space-around;
+  padding: 0;
+  background: none;
+`
+
+const Tab = styled(Button)`
+  border-radius: 0;
+  width: auto;
+  background: none;
+  border: none;
+  font-size: 9px;
+  padding: 6px 7px 3px 7px;
+  color: ${(props) =>
+    props.current ? props.theme.colors.main : props.theme.colors.disabled};
+  border-bottom: 3px solid
+    ${(props) =>
+      props.current ? props.theme.colors.main : props.theme.colors.disabled};
+  opacity: ${(props) => (props.current ? 1 : 0.7)};
+
+  :hover,
+  :active,
+  :focus {
+    background: none;
+    border-color: ${(props) => props.theme.colors.alt};
+    color: ${(props) => props.theme.colors.main};
   }
+`
 
-  handleClick(i) {
-    return e => this.setState({ tab: i });
-  }
+const Container = styled.div`
+  display: block;
+`
 
-  render() {
-    let tabs = Array.isArray(this.props.children)
-      ? this.props.children
-      : [this.props.children];
-    return (
-      <Fragment>
-        <Tabs
-          px={3}
-          style={{
-            justifyContent: "space-around"
-          }}
-        >
-          {tabs.map((tab, i) => {
-            let tabProps = {
-              key: i,
-              onClick: this.handleClick(i)
-            };
-            if (i == this.state.tab) {
-              tabProps.borderColor = "blue";
-            }
-            return <Tab {...tabProps}>{tab.props.label}</Tab>;
-          })}
-        </Tabs>
+const PopupTabs = ({ children }) => {
+  const [currentTab, setTab] = useState(0)
+  let tabs = Array.isArray(children) ? children : [children]
 
-        <Box p={3}>{tabs[this.state.tab]}</Box>
-      </Fragment>
-    );
-  }
+  return (
+    <Fragment>
+      <Tabs>
+        {tabs.map((tab, i) => {
+          if (!tab || !tab.props) {
+            return null
+          }
+          return (
+            <Tab
+              key={`tab-${i}`}
+              onClick={() => setTab(i)}
+              current={currentTab === i}
+            >
+              {tab.props.label}
+            </Tab>
+          )
+        })}
+      </Tabs>
+
+      <Container>{tabs[currentTab]}</Container>
+    </Fragment>
+  )
 }
 
-export default PopupTabs;
+export default PopupTabs
 
-export const TabPane = props => {
-  return <Fragment>{props.children}</Fragment>;
-};
+export const TabPane = ({ children }) => <Fragment>{children}</Fragment>

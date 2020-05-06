@@ -1,11 +1,11 @@
 import browser from 'webextension-polyfill'
 
-const hasParentClass = function(el, cls) {
+const hasParentClass = function (el, cls) {
   while ((el = el.parentElement) && !el.classList.contains(cls));
   return el
 }
 
-export const removeText = el => {
+export const removeText = (el) => {
   let parent = el.cloneNode(true)
   for (let i = 0; i < parent.childNodes.length; i++) {
     const child = parent.childNodes[i]
@@ -55,12 +55,12 @@ export const sanitizeTemplate = (template, shouldRemoveText = true) => {
   return template
 }
 
-const getContentEl = template => {
+const getContentEl = (template) => {
   let contentEl = template.querySelectorAll('.e-content')
   if (!contentEl || !contentEl.length) {
     contentEl = null
   } else {
-    contentEl = [].slice.call(contentEl).find(content => {
+    contentEl = [].slice.call(contentEl).find((content) => {
       // Check each potential title to see if it is inside a h-card or is also e-content
       if (
         content &&
@@ -85,14 +85,14 @@ const getContentEl = template => {
   return contentEl
 }
 
-const getTitleEl = template => {
+const getTitleEl = (template) => {
   // Look for all p-names
   let titleEl = template.querySelectorAll('.p-name')
   if (!titleEl || !titleEl.length) {
     // There are no p-names
     titleEl = null
   } else {
-    titleEl = [].slice.call(titleEl).find(title => {
+    titleEl = [].slice.call(titleEl).find((title) => {
       // Check each potential title to see if it is inside a h-card or is also e-content
       if (
         title &&
@@ -120,7 +120,7 @@ const getTitleEl = template => {
   return titleEl
 }
 
-const getPhotoEl = template => {
+const getPhotoEl = (template) => {
   const photoEl = template.querySelector('.u-photo')
   if (photoEl) {
     return photoEl
@@ -128,7 +128,7 @@ const getPhotoEl = template => {
   return null
 }
 
-export const getEditorElements = template => ({
+export const getEditorElements = (template) => ({
   title: getTitleEl(template),
   content: getContentEl(template),
   photo: getPhotoEl(template),
@@ -137,20 +137,21 @@ export const getEditorElements = template => ({
 export const getNewPostTemplate = async () => {
   let hasStoredTemplate = false
   let template = await browser.storage.local.get('setting_newPostTemplate')
+
+  // Got template from settings
   if (template && template.setting_newPostTemplate) {
     hasStoredTemplate = true
     template = new DOMParser().parseFromString(
       template.setting_newPostTemplate.trim(),
       'text/xml'
     ).firstChild
-    console.log('generated template', template)
-    // let tmpTemplate = document.createElement('div')
-    // tmpTemplate.innerHTML = template.setting_newPostTemplate.trim()
-    // template = tmpTemplate.innerHTML
+    console.log('[Generated template]', template)
   } else {
     // Create a template based off the last post.
     template = sanitizeTemplate(document.getElementsByClassName('h-entry')[0])
   }
+
+  // Check for on page template
   const onPageTemplate = document.getElementsByClassName('postrchild-template')
   if (onPageTemplate.length > 0) {
     // There is a template on this page, use it or replace it with the browser template

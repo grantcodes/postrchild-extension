@@ -1,32 +1,25 @@
 import React from 'react'
 import { hot } from 'react-hot-loader'
-import { Provider, Base } from 'rebass'
-import { createColors } from 'rebass/src/colors'
-import { IconContext } from 'react-icons'
+import { ThemeProvider } from 'styled-components'
 import CssReset from './CssReset'
+import ErrorBoundary from './ErrorBoundary'
 
 const theme = {
-  colors: createColors('#6142a5'),
+  colors: {
+    main: '#6142a5',
+    alt: '#df99d8',
+    background: '#fafafa',
+    text: '#0a0a0a',
+    disabled: '#3a363f',
+  },
 }
-theme.colors.blue = '#6142a5'
 
-const Theme = props => (
-  <Provider theme={theme}>
-    <CssReset theme={theme} />
-    <IconContext.Provider
-      value={{
-        size: 20,
-        style: {
-          verticalAlign: 'middle',
-          fill: 'currentColor',
-          color: 'inherit',
-        },
-      }}
-    >
-      <Base>{props.children}</Base>
-    </IconContext.Provider>
-  </Provider>
+const Theme = ({ children }) => (
+  <ThemeProvider theme={theme}>
+    <CssReset>
+      <ErrorBoundary>{children}</ErrorBoundary>
+    </CssReset>
+  </ThemeProvider>
 )
 
 export default hot(module)(Theme)
-export { theme }

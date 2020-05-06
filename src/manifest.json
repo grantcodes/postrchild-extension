@@ -1,7 +1,6 @@
 {
   "name": "PostrChild",
   "author": "grant.codes",
-  "options_page": "options.html",
   "options_ui": {
     "page": "options.html"
   },
@@ -9,12 +8,13 @@
     "persistent": true,
     "page": "background.html"
   },
-  "page_action": {
+  "browser_action": {
     "default_icon": {
       "19": "icon-34.png",
       "38": "icon-34.png"
     },
-    "default_title": "PostrChild"
+    "default_title": "PostrChild",
+    "default_popup": "popup.html"
   },
   "content_scripts": [
     {

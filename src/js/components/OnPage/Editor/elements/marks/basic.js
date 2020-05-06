@@ -1,4 +1,7 @@
 import React from 'react'
+import { jsx } from 'slate-hyperscript'
+import { toggleMark } from '../../helpers'
+
 const required = [
   'name',
   'icon',
@@ -11,16 +14,12 @@ const required = [
 const basicMark = ({ element: El, ...opts }) => {
   const defaultData = {
     showIcon: false,
-    domRecognizer: el => el.tagName.toLowerCase() === El.toLowerCase(),
+    domRecognizer: (el) => el.tagName.toLowerCase() === El.toLowerCase(),
     render: ({ attributes, children }) => <El {...attributes}>{children}</El>,
-    serialize: children => <El>{children}</El>,
-    deserialize: (el, next) => ({
-      object: 'mark',
-      type: opts.name,
-      nodes: next(el.childNodes),
-    }),
-    onButtonClick: editor => {
-      editor.toggleMark(opts.name)
+    serialize: (children) => `<${El}>${children}</${El}>`,
+    deserialize: (el, children) => jsx('text', { [opts.name]: true }, children),
+    onButtonClick: (editor) => {
+      toggleMark(editor, opts.name)
     },
   }
   const data = Object.assign({}, defaultData, opts)
