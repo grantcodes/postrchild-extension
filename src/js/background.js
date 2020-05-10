@@ -3,8 +3,9 @@ import '../img/icon-128.png'
 
 import browser from 'webextension-polyfill'
 import notification from './modules/notification'
-import micropub from './modules/micropub'
+import micropub, { setOptions as setMicropubOptions } from './modules/micropub'
 import Bookmark from './modules/bookmarks'
+import logger from './modules/logger'
 
 const shouldAutoPushBookmarks = async () => {
   const store = await browser.storage.local.get('setting_bookmarkAutoSync')
@@ -180,5 +181,67 @@ if (browser && browser.pageAction && browser.pageAction.onClicked) {
     //     browser.tabs.sendMessage(tab.id, { action: 'showNewPost' })
     //     break
     // }
+  })
+}
+
+if (browser && browser.contextMenus) {
+  console.log('Creating send to media endpoint context menu')
+  browser.contextMenus.create({
+    id: 'send-to-media-endpoint',
+    title: 'Send to media endpoint',
+    contexts: ['link', 'video', 'audio'],
+  })
+
+  browser.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (info.menuItemId === 'send-to-media-endpoint') {
+      if (info.srcUrl) {
+        notification({ message: 'Sending to media endpoint' })
+        try {
+          await setMicropubOptions()
+          if (!micropub.options.mediaEndpoint) {
+            const config = await micropub.query('config')
+            if (config['media-endpoint']) {
+              micropub.options.mediaEndpoint = config['media-endpoint']
+              await browser.storage.local.set({
+                setting_mediaEndpoint: config['media-endpoint'],
+              })
+            } else {
+              throw new Error('Could not find media endpoint')
+            }
+          }
+          const res = await fetch(info.srcUrl)
+          const blob = await res.blob()
+          const file = new File(
+            [blob],
+            info.srcUrl.split('/').pop().split('?')[0]
+          )
+          const url = await micropub.postMedia(file)
+          notification({
+            title: 'Saved to media endpoint',
+            message: url || 'Url unknown',
+            url,
+          })
+        } catch (err) {
+          logger.error('Error sending to media endpoint', err)
+          notification({ message: 'Error saving to media endpoint' })
+        }
+      }
+    } else {
+      notification({
+        title: 'Error sending to media endpoint',
+        message: 'Unable to retrieve file',
+      })
+    }
+  })
+} else {
+  logger.warn('browser context menu api not available', browser)
+}
+
+if (browser && browser.notifications && browser.notifications.onClicked) {
+  browser.notifications.onClicked.addListener((notificationId) => {
+    if (notificationId.startsWith('postrchild-notification-url-')) {
+      const url = notificationId.replace('postrchild-notification-url-', '')
+      browser.tabs.create({ url })
+    }
   })
 }

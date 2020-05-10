@@ -1,12 +1,16 @@
 import browser from 'webextension-polyfill'
 
-export default async function ({ message, title = 'PostrChild' }) {
+export default async function ({ title = 'PostrChild', url, ...params }) {
   if (browser && browser.notifications && browser.notifications.create) {
-    browser.notifications.create('postrchild-notification', {
+    let id = 'postrchild-notification'
+    if (url) {
+      id = `postrchild-notification-url-${url}`
+    }
+    browser.notifications.create(id, {
       type: 'basic',
       title,
-      message,
       iconUrl: browser.extension.getURL('icon-128.png'),
+      ...params,
     })
   } else if (browser && browser.runtime && browser.runtime.sendMessage) {
     await browser.runtime.sendMessage({
