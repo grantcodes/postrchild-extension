@@ -109,6 +109,7 @@ const PostrChildEditor = ({
   rich,
   placeholder,
   autoFocus,
+  ...editorProps
 }) => {
   const store = Store.useStore()
   const renderElement = useCallback((props) => <Element {...props} />, [])
@@ -129,6 +130,12 @@ const PostrChildEditor = ({
     return createdEditor
   }, [])
   const onKeyDown = useCallback(keyHandler({ editor, store }), [editor, store])
+
+  if (editorProps.className) {
+    editorProps.className += ' postrchild-inline-editor'
+  } else {
+    editorProps.className = 'postrchild-inline-editor'
+  }
 
   // Load value from prop
   useEffect(() => {
@@ -164,6 +171,7 @@ const PostrChildEditor = ({
         renderElement={renderElement}
         className="postrchild-inline-editor"
         onKeyDown={rich ? onKeyDown : null}
+        {...editorProps}
       />
       {rich && <SelectionToolbar />}
       {rich && <AutoSuggest />}
