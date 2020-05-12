@@ -123,7 +123,10 @@ const PostrChildEditor = ({
     const hocs = allSlateElements
       .filter((item) => item.hoc)
       .map((item) => item.hoc)
-    let createdEditor = withShortcuts(withReact(withHistory(createEditor())))
+    let createdEditor = withReact(withHistory(createEditor()))
+    if (rich) {
+      createdEditor = withShortcuts(createdEditor)
+    }
     for (const hoc of hocs) {
       createdEditor = hoc(createdEditor)
     }
