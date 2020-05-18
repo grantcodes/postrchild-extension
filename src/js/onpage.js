@@ -41,6 +41,10 @@ const loadNew = async () => {
       const template = await getNewPostTemplate()
       const els = getEditorElements(template)
 
+      browser.runtime.sendMessage({
+        action: 'saveNewPostPage',
+      })
+
       for (const key in els) {
         if (els.hasOwnProperty(key)) {
           const el = els[key]

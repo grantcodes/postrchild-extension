@@ -35,7 +35,7 @@ browser.bookmarks.onCreated.addListener(async (id, bookmark) => {
         notification({ message: 'Micropub bookmark created' })
       }
     } else {
-      console.log('Bookmarks are currently syncing so this should be ignored')
+      logger.log('Bookmarks are currently syncing so this should be ignored')
     }
     // })
     // .catch(err => {
@@ -77,7 +77,7 @@ browser.bookmarks.onMoved.addListener(async (id, bookmark) => {
         })
       }
     } catch (err) {
-      console.error('[Error moving bookmark]', err)
+      logger.error('[Error moving bookmark]', err)
     }
   }
 })
@@ -109,6 +109,15 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
     case 'notification': {
       const { title, message } = request
       notification({ title, message })
+    }
+    case 'saveNewPostPage': {
+      const {
+        setting_newPostPage: newPostPage,
+      } = await browser.storage.local.get()
+      if (!newPostPage && sender && sender.url) {
+        logger.log(`Setting new post page to ${sender.url}`)
+        await browser.storage.local.set({ setting_newPostPage: sender.url })
+      }
     }
     default: {
       break

@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components'
 import { Link as LinkIcon } from 'styled-icons/material'
 import Edit from './Edit'
@@ -11,6 +11,7 @@ import Reply from './Reply'
 import Notification from '../Notification'
 import { Spinner, Button } from '../util'
 import useCurrentTab from '../../hooks/use-current-tab'
+import useExtensionSettings from '../../hooks/use-extension-settings'
 
 const UrlButton = ({ url, setNotification }) => (
   <Button
@@ -39,6 +40,8 @@ function Actions() {
   const [loading, setLoading] = useState(true)
   const { url, id: tabId } = useCurrentTab()
   const [notification, setNotification] = useState(null)
+  const [settings] = useExtensionSettings()
+  const { newPostPage } = settings
 
   useEffect(() => {
     setEditPost(false)
@@ -49,12 +52,14 @@ function Actions() {
           action: 'discoverPageAction',
         })
         .then((res) => {
-          setLoading(false)
           if (res.action === 'edit') {
             setEditPost(true)
           } else if (res.action === 'new') {
             setNewPost(true)
           }
+        })
+        .all(() => {
+          setLoading(false)
         })
     }
   }, [tabId, setEditPost, setNewPost])
@@ -98,7 +103,9 @@ function Actions() {
         </>
       )}
 
-      {newPost && <New {...actionProps} />}
+      {(newPost || newPostPage) && (
+        <New {...actionProps} newPostPage={newPostPage} />
+      )}
 
       {!!url && (
         <>

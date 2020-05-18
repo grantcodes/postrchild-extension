@@ -7,6 +7,7 @@ export default function () {
     micropubToken: '',
     micropubEndpoint: '',
     newPostTemplate: '',
+    newPostPage: '',
     bookmarkAutoSync: false,
   })
 
@@ -21,6 +22,7 @@ export default function () {
         micropubToken: store.setting_micropubToken,
         micropubEndpoint: store.setting_micropubEndpoint,
         newPostTemplate: store.setting_newPostTemplate,
+        newPostPage: store.setting_newPostPage,
         bookmarkAutoSync: store.setting_bookmarkAutoSync ? true : false,
       })
     }

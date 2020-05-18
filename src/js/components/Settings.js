@@ -75,6 +75,14 @@ const Settings = () => {
 
       {!!settings.micropubToken && (
         <Fragment>
+          <Label htmlFor="newPostPage">New Post Page</Label>
+          <Input
+            type="url"
+            id="newPostPage"
+            value={settings.newPostPage}
+            onChange={(e) => setSettings({ newPostPage: e.target.value })}
+          />
+
           <Label htmlFor="newPostTemplate">New Post Template</Label>
           <Input
             as="textarea"
