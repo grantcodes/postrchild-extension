@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { hot } from 'react-hot-loader'
 import Theme from './Theme'
 import Settings from './Settings'
 
@@ -11,4 +10,4 @@ const Popup = () => (
   </Theme>
 )
 
-export default hot(module)(Popup)
+export default Popup

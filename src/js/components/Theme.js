@@ -1,5 +1,4 @@
 import React from 'react'
-import { hot } from 'react-hot-loader'
 import { ThemeProvider } from 'styled-components'
 import CssReset from './CssReset'
 import ErrorBoundary from './ErrorBoundary'
@@ -22,4 +21,4 @@ const Theme = ({ children }) => (
   </ThemeProvider>
 )
 
-export default hot(module)(Theme)
+export default Theme

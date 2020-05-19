@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill'
 import React from 'react'
 import { Add as Icon } from 'styled-icons/material'
 import Action from './Base'
@@ -13,6 +14,7 @@ const New = ({ tabId, url, newPostPage, ...props }) => (
         }
       }
       browser.tabs.sendMessage(tabId, { action: 'showNewPost' })
+      window.close()
     }}
     {...props}
   >

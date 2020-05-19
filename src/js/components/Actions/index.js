@@ -12,6 +12,7 @@ import Notification from '../Notification'
 import { Spinner, Button } from '../util'
 import useCurrentTab from '../../hooks/use-current-tab'
 import useExtensionSettings from '../../hooks/use-extension-settings'
+import logger from '../../modules/logger'
 
 const UrlButton = ({ url, setNotification }) => (
   <Button
@@ -58,7 +59,8 @@ function Actions() {
             setNewPost(true)
           }
         })
-        .all(() => {
+        .catch((err) => logger.warn('Error discovering page action', err))
+        .finally(() => {
           setLoading(false)
         })
     }
@@ -111,7 +113,9 @@ function Actions() {
         <>
           <Like {...actionProps} />
           <Repost {...actionProps} />
-          <Reply {...actionProps} />
+          {!!newPostPage && (
+            <Reply {...actionProps} newPostPage={newPostPage} />
+          )}
         </>
       )}
     </Container>

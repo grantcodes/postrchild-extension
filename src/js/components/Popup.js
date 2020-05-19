@@ -1,5 +1,4 @@
 import React from 'react'
-import { hot } from 'react-hot-loader'
 import styled from 'styled-components'
 import Header from './Header'
 import Tabs, { TabPane } from './PopupTabs'
@@ -48,4 +47,4 @@ const Popup = () => {
   )
 }
 
-export default hot(module)(Popup)
+export default Popup

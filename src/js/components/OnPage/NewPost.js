@@ -18,13 +18,20 @@ const baseProperties = {
   'post-status': [],
 }
 
-const NewPost = ({ titleEl, contentEl, photoEl }) => {
+const NewPost = ({
+  titleEl,
+  contentEl,
+  photoEl,
+  properties: initialProperties,
+}) => {
   const [initialLoad, setInitialLoad] = useState(true)
   const [loading, setLoading] = useState(true)
   const [popoutOpen, setPopoutOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [properties, setProperties] = useState(baseProperties)
+  const [properties, setProperties] = useState(
+    Object.assign({}, baseProperties, initialProperties)
+  )
   const [syndicationProviders, setSyndicationProviders] = useState([])
 
   // TODO: Initial loading stuff can probably use react suspense

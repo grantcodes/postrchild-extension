@@ -9,10 +9,6 @@ import logger from './modules/logger'
 import notification from './modules/notification'
 import { getNewPostTemplate, getEditorElements } from './modules/template-utils'
 
-if (module.hot) {
-  __webpack_public_path__ = 'http://localhost:3000/'
-}
-
 const createOnPageContainer = () => {
   const existing = document.getElementById('postrchild-extension-app-container')
   if (existing) {
@@ -30,8 +26,7 @@ const createOnPageContainer = () => {
   return onPageContainer
 }
 
-const loadNew = async () => {
-  // TODO: Store this url so that it can be used with a quick action
+const loadNew = async (props = {}) => {
   try {
     const newPostContainer = createOnPageContainer()
     logger.log('Got new post container', newPostContainer)
@@ -41,6 +36,7 @@ const loadNew = async () => {
       const template = await getNewPostTemplate()
       const els = getEditorElements(template)
 
+      // Save this url so it can be reused
       browser.runtime.sendMessage({
         action: 'saveNewPostPage',
       })
@@ -60,6 +56,7 @@ const loadNew = async () => {
             titleEl={els.title}
             contentEl={els.content}
             photoEl={els.photo}
+            {...props}
           />
         </Theme>,
         newPostContainer
@@ -122,8 +119,10 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
       loadEdit()
       break
     case 'showNewPost':
-      // Inject new post editor onto page
-      loadNew()
+      // Inject new post editor onto page, can pass in properties to prefill data.
+      const properties = request.properties ? request.properties : {}
+      // TODO: This isn't really run from the reply action
+      loadNew({ properties })
       break
   }
   return false

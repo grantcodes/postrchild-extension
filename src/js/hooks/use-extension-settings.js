@@ -1,5 +1,5 @@
 import browser from 'webextension-polyfill'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 export default function () {
   const [settings, setSettings] = useState({
@@ -12,11 +12,8 @@ export default function () {
   })
 
   useEffect(() => {
-    let mounted = false
-    const didMount = async () => {
-      mounted = true
-      // Get local settings
-      const store = await browser.storage.local.get()
+    // Get local settings
+    browser.storage.local.get().then((store) => {
       setSettings({
         micropubMe: store.setting_micropubMe,
         micropubToken: store.setting_micropubToken,
@@ -25,16 +22,13 @@ export default function () {
         newPostPage: store.setting_newPostPage,
         bookmarkAutoSync: store.setting_bookmarkAutoSync ? true : false,
       })
-    }
-    if (!mounted) {
-      didMount()
-    }
+    })
   }, [])
 
-  const setAndSaveSettings = (state) => {
+  const setAndSaveSettings = useCallback((update) => {
     // Update the state
-    const update = { ...settings, ...state }
-    setSettings(update)
+    const state = { ...settings, ...update }
+    setSettings(state)
 
     // And store in the browser storage
     let browserUpdate = {}
@@ -45,7 +39,7 @@ export default function () {
       }
     }
     browser.storage.local.set(browserUpdate)
-  }
+  }, [])
 
   return [settings, setAndSaveSettings]
 }
