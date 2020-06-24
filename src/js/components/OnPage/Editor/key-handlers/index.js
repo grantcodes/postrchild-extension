@@ -10,9 +10,9 @@ import autoSuggest from './autosuggest'
  *
  * @param {Event} event
  */
-const keyHandler = ({ editor, store }) => (event) => {
+const keyHandler = ({ editor }) => (event) => {
   shortcutHandler({ editor, event })
-  autoSuggest({ event, editor, store })
+  autoSuggest({ event, editor })
 }
 
 const withShortcuts = (editor) => {

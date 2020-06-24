@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
-import { renderToString } from 'react-dom/server'
 import PropTypes from 'prop-types'
+import { useStoreState, useStoreActions } from 'easy-peasy'
 import { createEditor } from 'slate'
 import { Slate, Editable, withReact } from 'slate-react'
 import { withHistory } from 'slate-history'
@@ -13,7 +13,6 @@ import { withShortcuts, keyHandler } from './key-handlers'
 import { serialize, deserialize } from './converter'
 // import suggestionPlugins from './suggestions'
 import * as slateElements from './elements'
-import Store from './store'
 const allSlateElements = [
   ...slateElements.blocks,
   ...slateElements.marks,
@@ -51,73 +50,27 @@ const Leaf = ({ attributes, children, leaf }) => {
   return <span {...attributes}>{children}</span>
 }
 
-// const plugins = [
-//   InsertImages({
-//     insertImage: (editor, file) => {
-//       if (file.type.startsWith('image/')) {
-//         return editor
-//           .insertBlock({
-//             type: 'image',
-//             data: {
-//               file,
-//               alt: '',
-//               className: 'alignnone',
-//               src: URL.createObjectURL(file),
-//             },
-//           })
-//           .insertBlock('paragraph')
-//       } else if (file.type.startsWith('audio/')) {
-//         return editor
-//           .insertBlock({
-//             type: 'audio',
-//             data: {
-//               file,
-//               src: URL.createObjectURL(file),
-//             },
-//           })
-//           .insertBlock('paragraph')
-//       } else if (file.type.startsWith('video/')) {
-//         return editor
-//           .insertBlock({
-//             type: 'video',
-//             data: {
-//               file,
-//               poster: '',
-//               controls: true,
-//               className: 'alignnone',
-//               src: URL.createObjectURL(file),
-//             },
-//           })
-//           .insertBlock('paragraph')
-//       } else {
-//         // TODO: This should use the notification module
-//         alert(
-//           'Sorry that file type is not supported in PostrChild at the moment'
-//         )
-//         return
-//       }
-//     },
-//   }),
-//   PasteLinkify(),
-//   CollapseOnEscape(),
-//   ...suggestionPlugins,
-// ]
-
 const PostrChildEditor = ({
-  value: valueProp,
+  initialValue = '',
   onChange,
   rich,
   placeholder,
   autoFocus,
+  onSubmit,
   ...editorProps
 }) => {
-  const store = Store.useStore()
+  const publishPost = useStoreActions((actions) => actions.publishPost)
   const renderElement = useCallback((props) => <Element {...props} />, [])
   const renderLeaf = useCallback((props) => <Leaf {...props} />, [])
   const [value, setValue] = useState([
     rich
       ? { type: 'paragraph', children: [{ text: '' }] }
       : { children: [{ text: '' }] },
+    // rich && initialValue
+    //   ? deserialize(initialValue)
+    //   : rich
+    //   ? { type: 'paragraph', children: [{ text: '' }] } // TODO: Serialize initialValue
+    //   : { children: [{ text: initialValue }] }, // TODO: use initial value
   ])
   const editor = useMemo(() => {
     const hocs = allSlateElements
@@ -130,22 +83,18 @@ const PostrChildEditor = ({
     for (const hoc of hocs) {
       createdEditor = hoc(createdEditor)
     }
+
+    // Make submit function available in the editor
+    createdEditor.postrChildSubmit = publishPost
     return createdEditor
   }, [])
-  const onKeyDown = useCallback(keyHandler({ editor, store }), [editor, store])
+  const onKeyDown = useCallback(keyHandler({ editor }), [editor])
 
   if (editorProps.className) {
     editorProps.className += ' postrchild-inline-editor'
   } else {
     editorProps.className = 'postrchild-inline-editor'
   }
-
-  // Load value from prop
-  useEffect(() => {
-    if (rich && valueProp) {
-      setValue(deserialize(valueProp))
-    }
-  }, [rich, valueProp])
 
   const handleChange = (value) => {
     const last = value[value.length - 1]
@@ -167,20 +116,30 @@ const PostrChildEditor = ({
   }
 
   return (
-    <Slate editor={editor} value={value} onChange={handleChange}>
-      <Editable
-        spellCheck
-        placeholder={placeholder}
-        autoFocus={autoFocus}
-        renderLeaf={renderLeaf}
-        renderElement={renderElement}
-        className="postrchild-inline-editor"
-        onKeyDown={rich ? onKeyDown : null}
-        {...editorProps}
-      />
-      {rich && <SelectionToolbar />}
-      {rich && <AutoSuggest />}
-    </Slate>
+    <>
+      <Slate editor={editor} value={value} onChange={handleChange}>
+        <Editable
+          spellCheck
+          placeholder={placeholder}
+          autoFocus={autoFocus}
+          renderLeaf={renderLeaf}
+          renderElement={renderElement}
+          className="postrchild-inline-editor"
+          onKeyDown={rich ? onKeyDown : null}
+          {...editorProps}
+        />
+        {rich && <SelectionToolbar />}
+        {rich && <AutoSuggest />}
+      </Slate>
+      {/* <button
+        onClick={(e) => {
+          e.preventDefault()
+          onSubmit()
+        }}
+      >
+        Submit?
+      </button> */}
+    </>
   )
 }
 
@@ -200,10 +159,6 @@ PostrChildEditor.defaultProps = {
   autoFocus: false,
 }
 
-const Wrapper = (props) => (
-  <Store.Container>
-    <PostrChildEditor {...props} />
-  </Store.Container>
-)
+const Wrapper = (props) => <PostrChildEditor {...props} />
 
 export default Wrapper

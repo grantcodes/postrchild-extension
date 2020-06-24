@@ -1,11 +1,10 @@
 import { useEffect } from 'react'
-import Store from '../store'
-import micropub from '../../../../modules/micropub'
+import { useStoreState, useStoreActions } from 'easy-peasy'
+// import micropub from '../../../../modules/micropub'
 
 const useMicropubContacts = (file = null) => {
-  const store = Store.useStore()
-  const contacts = store.get('contacts')
-  const setContacts = store.set('contacts')
+  const contacts = useStoreState((state) => state.contacts)
+  const setContacts = useStoreActions((state) => state.setContacts)
 
   useEffect(() => {
     const getContacts = async () => {

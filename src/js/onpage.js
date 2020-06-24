@@ -2,12 +2,14 @@ import browser from 'webextension-polyfill'
 
 import React from 'react'
 import { render } from 'react-dom'
+import { StoreProvider } from 'easy-peasy'
 import Theme from './components/Theme'
 import NewPost from './components/OnPage/NewPost'
 import EditPost from './components/OnPage/EditPost'
 import logger from './modules/logger'
 import notification from './modules/notification'
 import { getNewPostTemplate, getEditorElements } from './modules/template-utils'
+import store from './modules/store'
 
 const createOnPageContainer = () => {
   const existing = document.getElementById('postrchild-extension-app-container')
@@ -51,14 +53,16 @@ const loadNew = async (props = {}) => {
       }
 
       render(
-        <Theme>
-          <NewPost
-            titleEl={els.title}
-            contentEl={els.content}
-            photoEl={els.photo}
-            {...props}
-          />
-        </Theme>,
+        <StoreProvider store={store}>
+          <Theme>
+            <NewPost
+              titleEl={els.title}
+              contentEl={els.content}
+              photoEl={els.photo}
+              {...props}
+            />
+          </Theme>
+        </StoreProvider>,
         newPostContainer
       )
     }
@@ -71,9 +75,11 @@ const loadEdit = async () => {
   if (editorContainer) {
     logger.log('Loading edit post')
     render(
-      <Theme>
-        <EditPost postEl={document.getElementsByClassName('h-entry')[0]} />
-      </Theme>,
+      <StoreProvider store={store}>
+        <Theme>
+          <EditPost postEl={document.getElementsByClassName('h-entry')[0]} />
+        </Theme>
+      </StoreProvider>,
       editorContainer
     )
   }

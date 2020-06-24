@@ -1,22 +1,15 @@
 import browser from 'webextension-polyfill'
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
+import { useStoreState, useStoreActions } from 'easy-peasy'
 import Popout from './Popout'
 import PopoutForm from './PopoutForm'
 import FloatingActions from './FloatingActions'
 import EditorPortal from './EditorPortal'
-import micropub, { uploadMf2FilesToMediaEndpoint } from '../../modules/micropub'
+import useLoadInitialPost from '../../hooks/load-initial-post'
+import micropub from '../../modules/micropub'
 import * as templateUtils from '../../modules/template-utils'
 import notification from '../../modules/notification'
-
-const baseProperties = {
-  'mp-slug': [],
-  summary: [],
-  featured: [],
-  photo: [],
-  'mp-syndicate-to': [],
-  visibility: [],
-  'post-status': [],
-}
+import logger from '../../modules/logger'
 
 const NewPost = ({
   titleEl,
@@ -24,20 +17,26 @@ const NewPost = ({
   photoEl,
   properties: initialProperties,
 }) => {
+  useLoadInitialPost()
   const [initialLoad, setInitialLoad] = useState(true)
-  const [loading, setLoading] = useState(true)
   const [popoutOpen, setPopoutOpen] = useState(false)
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [properties, setProperties] = useState(
-    Object.assign({}, baseProperties, initialProperties)
-  )
   const [syndicationProviders, setSyndicationProviders] = useState([])
+
+  // TODO: Set initial properties
+  const loading = useStoreState((state) => state.loading)
+  const setLoading = useStoreActions((actions) => actions.setLoading)
+  const setProperties = useStoreActions((actions) => actions.setPostProperties)
+  const post = useStoreState((state) => state.post)
+  const properties = useStoreState((state) => state.post.properties)
+  const publishPost = useStoreActions((actions) => actions.publishPost)
+  const content = properties.content[0].html
+  const title = properties.name[0]
 
   // TODO: Initial loading stuff can probably use react suspense
   useEffect(() => {
     const didMount = async () => {
       try {
+        // Get media endpoint
         if (!micropub.options.mediaEndpoint) {
           const config = await micropub.query('config')
           if (config['media-endpoint']) {
@@ -45,30 +44,14 @@ const NewPost = ({
           }
         }
 
+        // Get syndication options
         const res = await micropub.query('syndicate-to')
         if (res['syndicate-to']) {
           const syndicationProviders = res['syndicate-to']
           setSyndicationProviders(syndicationProviders)
         }
-
-        const store = await browser.storage.local.get('newPostCache')
-        if (store.newPostCache) {
-          console.log('[Loading from cache]', store.newPostCache)
-          if (store.newPostCache.title) {
-            setTitle(store.newPostCache.title)
-          }
-          if (
-            store.newPostCache.content &&
-            store.newPostCache.content !== '<p></p>'
-          ) {
-            setContent(store.newPostCache.content)
-          }
-          if (store.newPostCache.properties) {
-            setProperties(store.newPostCache.properties)
-          }
-        }
       } catch (err) {
-        console.warn('[Error querying micropub endpoint]', err)
+        logger.warn('[Error querying micropub endpoint]', err)
       }
       setInitialLoad(false)
       setLoading(false)
@@ -76,48 +59,10 @@ const NewPost = ({
     didMount()
   }, [])
 
-  useEffect(() => {
-    if (
-      title ||
-      (content && content !== '<p></p>') ||
-      properties !== baseProperties
-    ) {
-      browser.storage.local.set({
-        newPostCache: {
-          title,
-          content,
-          properties,
-        },
-      })
-    }
-  }, [properties, content, title])
-
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     setLoading(true)
     try {
-      let mf2 = { type: ['h-entry'], properties: { ...properties } }
-      mf2 = await uploadMf2FilesToMediaEndpoint(mf2)
-
-      if (title) {
-        mf2.properties.name = [title]
-      }
-
-      if (content) {
-        mf2.properties.content = [{ html: content }]
-      }
-
-      for (const key in mf2.properties) {
-        if (mf2.properties.hasOwnProperty(key)) {
-          const value = mf2.properties[key]
-          if (!Array.isArray(value) || value.length === 0) {
-            // Empty or bad property
-            delete mf2.properties[key]
-          }
-        }
-      }
-
-      const url = await micropub.create(mf2)
-
+      await publishPost()
       // Clear cache
       browser.storage.local.remove('newPostCache')
 
@@ -128,14 +73,21 @@ const NewPost = ({
         window.location.reload()
       }
     } catch (err) {
-      console.error('[Error creating post]', err)
-      notification({ title: 'Error creating new post', message: err.message })
+      logger.error('[Error creating post]', err)
+      notification({
+        title: 'Error creating new post',
+        message: err.message || 'Unknown error',
+      })
     }
     setLoading(false)
-  }
+  }, [post])
+
+  const popoutProperties = { ...properties }
+  delete popoutProperties.name
+  delete popoutProperties.content
 
   return (
-    <Fragment>
+    <>
       <FloatingActions
         loading={loading || initialLoad}
         onPublish={handleSubmit}
@@ -147,10 +99,10 @@ const NewPost = ({
       />
 
       {!initialLoad && (
-        <Fragment>
+        <>
           <Popout open={popoutOpen} onClose={() => setPopoutOpen(false)}>
             <PopoutForm
-              properties={properties}
+              properties={popoutProperties}
               onChange={setProperties}
               syndication={syndicationProviders}
             />
@@ -158,22 +110,25 @@ const NewPost = ({
 
           <EditorPortal
             el={titleEl}
-            onChange={setTitle}
+            onChange={(newTitle) => setProperties({ name: [newTitle] })}
             placeholder="Title..."
             rich={false}
-            // value={title}
+            initialValue={title}
           />
 
           <EditorPortal
             el={contentEl}
-            onChange={setContent}
-            // value={content}
+            onChange={(newContent) =>
+              setProperties({ content: [{ html: newContent }] })
+            }
+            initialValue={content}
             rich={true}
+            onSubmit={handleSubmit}
             autoFocus
           />
-        </Fragment>
+        </>
       )}
-    </Fragment>
+    </>
   )
 }
 

@@ -11,18 +11,20 @@ const EditorPortal = ({ el, ...editorProps }) => {
 
   // On mount get the sibling elements after the el to replace and delete the main element
   useEffect(() => {
-    const siblings = [...parent.childNodes]
-    const elIndex = siblings.findIndex((sibling) => sibling == el)
-    const nextSiblings = siblings.slice(elIndex + 1)
+    if (parent) {
+      const siblings = [...parent.childNodes]
+      const elIndex = siblings.findIndex((sibling) => sibling == el)
+      const nextSiblings = siblings.slice(elIndex + 1)
 
-    setElProps({
-      as: el.tagName.toLowerCase(),
-      className: el.className,
-      id: el.id,
-    })
-    setMounted(true)
-    setAfterSiblings(nextSiblings)
-    el.remove()
+      setElProps({
+        as: el.tagName.toLowerCase(),
+        className: el.className,
+        id: el.id,
+      })
+      setMounted(true)
+      setAfterSiblings(nextSiblings)
+      el.remove()
+    }
   }, [])
 
   // Remove siblings after the editor and append them after the portal

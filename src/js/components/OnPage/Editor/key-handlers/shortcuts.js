@@ -21,6 +21,11 @@ const shortcutHandler = ({ editor, event }) => {
       return toggleMark(editor, mark)
     }
   }
+
+  if (editor.postrChildSubmit && isHotkey('ctrl+enter', event)) {
+    event.preventDefault()
+    editor.postrChildSubmit()
+  }
 }
 
 export { HOTKEYS }
