@@ -148,18 +148,20 @@ const PostrChildEditor = ({
   }, [rich, valueProp])
 
   const handleChange = (value) => {
-    setValue(value)
-    let html = value ? serialize(value) : ''
-
-    // console.log('serialized html', html)
+    const last = value[value.length - 1]
+    // If there's not a paragraph as the last item on a rich editor then add it.
+    const newValue =
+      rich && last.type !== 'paragraph'
+        ? [...value, { type: 'paragraph', children: [{ text: '' }] }]
+        : value
+    setValue(newValue)
 
     if (rich) {
+      const html = value ? serialize(value) : ''
       onChange(html)
     } else {
       // Only return plain text if not a rich editor
-      const tmpEl = document.createElement('div')
-      tmpEl.innerHTML = html
-      const text = tmpEl.innerText
+      const text = value[0].children[0].text
       onChange(text)
     }
   }
