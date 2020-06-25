@@ -1,24 +1,24 @@
 import styled from 'styled-components'
 
 export default styled.input`
-  display: block;
-  width: 100%;
-  color: inherit;
-  border: 1px solid ${(props) => props.theme.colors.text};
-  border-radius: 4px;
-  text-transform: none;
-  letter-spacing: 0;
-  font-weight: normal;
-  font-size: inherit;
-  padding: 6px 10px;
-  background-color: transparent;
-  box-shadow: none;
-  margin-bottom: 10px;
+  display: block !important;
+  width: 100% !important;
+  color: inherit !important;
+  border: 1px solid ${(props) => props.theme.colors.text} !important;
+  border-radius: 4px !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-weight: normal !important;
+  font-size: 16px !important;
+  padding: 6px 10px !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  margin-bottom: 10px !important;
 
   :hover,
   :focus,
   :active {
-    border-color: ${(props) => props.theme.colors.main};
+    border-color: ${(props) => props.theme.colors.main} !important;
   }
 
   :disabled {

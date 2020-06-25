@@ -25,27 +25,27 @@ const Container = styled.div`
 `
 
 const CloseButton = styled(Button)`
-  position: fixed;
-  right: 0px;
-  top: 0px;
-  padding: 10px;
-  display: block;
-  color: ${(props) => props.theme.colors.text};
-  background: none;
-  width: auto;
-  height: auto;
-  font-size: 30px;
-  z-index: 2;
+  position: fixed !important;
+  right: 0px !important;
+  top: 0px !important;
+  padding: 10px !important;
+  display: block !important;
+  color: ${(props) => props.theme.colors.text} !important;
+  background: none !important;
+  width: auto !important;
+  height: auto !important;
+  font-size: 30px !important;
+  z-index: 2 !important;
 
   svg {
-    display: block;
+    display: block !important;
   }
 
   :hover,
   :focus,
   :active {
-    background: none;
-    color: ${(props) => props.theme.colors.text};
+    background: none !important;
+    color: ${(props) => props.theme.colors.text} !important;
   }
 `
 
