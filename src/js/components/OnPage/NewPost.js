@@ -29,8 +29,11 @@ const NewPost = ({
   const post = useStoreState((state) => state.post)
   const properties = useStoreState((state) => state.post.properties)
   const publishPost = useStoreActions((actions) => actions.publishPost)
-  const content = properties.content[0].html
-  const title = properties.name[0]
+  const content =
+    properties.content && properties.content[0] && properties.content[0].html
+      ? properties.content[0].html
+      : ''
+  const title = properties.name ? properties.name[0] : ''
 
   // TODO: Initial loading stuff can probably use react suspense
   useEffect(() => {
