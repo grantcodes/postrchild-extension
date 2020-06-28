@@ -68,7 +68,7 @@ const Floater = ({
 
       el.style.opacity = 1
       el.style.top = `clamp(0px, ${top}px, ${
-        document.documentElement.clientHeight - el.offsetHeight
+        document.documentElement.scrollHeight - el.offsetHeight
       }px`
       el.style.left = `clamp(0px, ${left}px, ${
         document.documentElement.clientWidth - el.offsetWidth

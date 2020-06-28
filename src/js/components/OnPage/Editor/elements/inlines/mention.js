@@ -3,10 +3,7 @@ import { useEditor, useSelected } from 'slate-react'
 import { Person as MentionIcon } from 'styled-icons/material'
 import { updateElement } from '../../helpers'
 
-// TODO: Make sure mentions are not clickable in the editor
-
 const Mention = ({ attributes, element, children }) => {
-  const editor = useEditor()
   const selected = useSelected()
 
   const { hCard } = element
@@ -16,7 +13,11 @@ const Mention = ({ attributes, element, children }) => {
       {...attributes}
       className="h-card"
       href={hCard.properties.url[0]}
-      style={selected ? { backgroundColor: 'rgba(109,160,255,0.2)' } : null}
+      style={selected ? { backgroundColor: 'rgba(109,160,255,0.2)' } : {}}
+      onClick={(e) => {
+        // Don't allow mentions to be clicked in the editor
+        e.preventDefault()
+      }}
       contentEditable={false}
     >
       @{hCard.properties.name[0]}

@@ -3,18 +3,18 @@ import styled from 'styled-components'
 import { Button } from '../util'
 
 const Action = styled(Button)`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  padding: 5px 10px;
-  margin-bottom: 5px;
-  text-align: left;
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: flex-start !important;
+  align-items: center !important;
+  width: 100% !important;
+  padding: 5px 10px !important;
+  margin-bottom: 5px !important;
+  text-align: left !important;
 
   & > * {
-    display: block;
-    margin-right: 10px;
+    display: block !important;
+    margin-right: 10px !important;
   }
 `
 

@@ -2,8 +2,7 @@ import onEnter from './enter'
 import onBackspace from './backspace'
 import onSpace from './space'
 import shortcutHandler from './shortcuts'
-import { hoc } from './autosuggest'
-import autoSuggest from './autosuggest'
+import autoSuggest, { hoc } from './autosuggest'
 
 /**
  * On key down, check for our specific key shortcuts.

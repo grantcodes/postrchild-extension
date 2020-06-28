@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Transforms } from 'slate'
 import { useEditor, useSelected } from 'slate-react'
 import Button from '../../../../util/Button'
 import { PhotoSizeSelectActual as ImageIcon } from 'styled-icons/material'
 import Overlay from '../../Toolbar/Overlay'
 import AlignmentButtons from '../../Toolbar/AlignmentButtons'
-import micropub from '../../../../../modules/micropub'
-import { isUrl, updateElement } from '../../helpers'
+import { isUrl, updateElement, requestFiles } from '../../helpers'
 import useMicropubUpload from '../../hooks/useMicropubUpload'
 
 const withImages = (editor) => {
@@ -94,8 +93,6 @@ const Image = ({ attributes, children, element }) => {
     }
   }, [editor, element, fileUrl])
 
-  console.log('image render', { element })
-
   return (
     <div
       {...attributes}
@@ -151,29 +148,17 @@ export default {
     children: [{ text: '' }],
   }),
   onButtonClick: (editor) => {
-    const el = document.createElement('input')
-    el.type = 'file'
-    el.accept = 'image/*'
-    el.click()
-    el.onchange = (e) => {
-      for (const file of el.files) {
+    requestFiles({
+      accept: 'image/*',
+      handleFile: (file) => {
         insertImage(editor, {
           file,
           alt: '',
           class: 'alignnone',
           src: URL.createObjectURL(file),
         })
-
-        // const { value } = editor
-        // const { startBlock } = value
-        // if (startBlock.type === 'paragraph' && startBlock.text === '') {
-        //   editor.setBlocks(imageBlock)
-        // } else {
-        //   editor.moveToEndOfBlock().insertBlock(imageBlock)
-        // }
-        // editor.insertBlock('paragraph')
-      }
-    }
+      },
+    })
   },
   hoc: withImages,
 }

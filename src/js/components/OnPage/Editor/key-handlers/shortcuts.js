@@ -22,9 +22,13 @@ const shortcutHandler = ({ editor, event }) => {
     }
   }
 
-  if (editor.postrChildSubmit && isHotkey('ctrl+enter', event)) {
+  if (
+    editor.postrChild &&
+    editor.postrChild.submit &&
+    isHotkey('ctrl+enter', event)
+  ) {
     event.preventDefault()
-    editor.postrChildSubmit()
+    editor.postrChild.submit()
   }
 }
 

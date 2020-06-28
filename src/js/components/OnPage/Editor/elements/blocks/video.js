@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { Transforms } from 'slate'
 import { useEditor, useSelected } from 'slate-react'
 import Button from '../../../../util/Button'
 import { Movie as VideoIcon } from 'styled-icons/material'
 import Overlay from '../../Toolbar/Overlay'
 import AlignmentButtons from '../../Toolbar/AlignmentButtons'
-import micropub from '../../../../../modules/micropub'
-import { updateElement } from '../../helpers'
+import { updateElement, requestFiles } from '../../helpers'
+import useMicropubUpload from '../../hooks/useMicropubUpload'
 
 const insertVideo = (editor, properties) => {
   const data = {
@@ -23,24 +23,22 @@ const insertVideo = (editor, properties) => {
 const Video = ({ attributes, children, element }) => {
   const editor = useEditor()
   const selected = useSelected()
-  const [uploading, setUploading] = useState(false)
+  const { uploading, url: fileUrl } = useMicropubUpload(element.file)
+  const { uploading: uploadingPoster, url: posterUrl } = useMicropubUpload(
+    element.posterFile
+  )
 
   useEffect(() => {
-    const upload = async () => {
-      const file = element.file
-      if (file) {
-        try {
-          const fileUrl = await micropub.postMedia(file)
-          updateElement(editor, element, { file: null, src: fileUrl })
-        } catch (err) {
-          alert('Error uploading file')
-          console.log('Error uploading file', err)
-        }
-      }
-      setUploading(false)
+    if (fileUrl) {
+      updateElement(editor, element, { src: fileUrl, file: null })
     }
-    upload()
-  }, [editor, element])
+  }, [editor, element, fileUrl])
+
+  useEffect(() => {
+    if (posterUrl) {
+      updateElement(editor, element, { poster: posterUrl, posterFile: null })
+    }
+  }, [editor, element, posterUrl])
 
   return (
     <div {...attributes} style={{ position: 'relative' }}>
@@ -64,23 +62,12 @@ const Video = ({ attributes, children, element }) => {
             <Button
               onClick={(e) => {
                 e.preventDefault()
-                const el = document.createElement('input')
-                el.type = 'file'
-                el.accept = 'image/*'
-                el.click()
-                el.onchange = async (e) => {
-                  const file = el.files[0]
-                  if (!file) {
-                    return
-                  }
-                  try {
-                    const fileUrl = await micropub.postMedia(file)
-                    updateElement(editor, element, { poster: fileUrl })
-                  } catch (err) {
-                    alert('Error uploading file')
-                    console.log('Error uploading poster file', err)
-                  }
-                }
+                requestFiles({
+                  accept: 'image/*',
+                  handleFile: (file) => {
+                    updateElement(editor, element, { posterFile: file })
+                  },
+                })
               }}
             >
               Add Poster
@@ -127,31 +114,19 @@ export default {
     children: [{ text: '' }],
   }),
   onButtonClick: (editor) => {
-    const el = document.createElement('input')
-    el.type = 'file'
-    el.accept = 'video/*'
-    el.click()
-    el.onchange = (e) => {
-      for (const file of el.files) {
+    requestFiles({
+      accept: 'video/*',
+      handleFile: (file) => {
         const videoBlock = {
-          type: 'video',
           file,
           poster: '',
           class: 'alignnone',
           src: URL.createObjectURL(file),
           controls: true,
         }
-
-        // const { value } = editor
-        // const { startBlock } = value
-        // if (startBlock.type === 'paragraph' && startBlock.text === '') {
-        //   editor.setBlocks(videoBlock)
-        // } else {
-        //   editor.moveToEndOfBlock().insertBlock(videoBlock)
-        // }
-        // editor.insertBlock('paragraph')
-      }
-    }
+        insertVideo(editor, videoBlock)
+      },
+    })
   },
   hoc: (editor) => {
     const { insertData, isVoid } = editor

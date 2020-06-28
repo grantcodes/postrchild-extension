@@ -1,33 +1,39 @@
 import { useState, useEffect } from 'react'
 import micropub from '../../../../modules/micropub'
 import notification from '../../../../modules/notification'
+import logger from '../../../../modules/logger'
 
 const useMicropubUpload = (file = null) => {
-  const [uploading, setUploading] = useState(false)
+  const [status, setStatus] = useState(null)
   const [url, setUrl] = useState(null)
 
   useEffect(() => {
-    const upload = async () => {
-      try {
-        setUploading(true)
-        console.log('Posting to media endpoint')
-        // const fileUrl = await micropub.postMedia(file)
-        // TODO: Rotate image based on exif
-        const fileUrl = URL.createObjectURL(file)
-        setUrl(fileUrl)
-      } catch (err) {
-        notification({ message: 'Error uploading file' })
-        console.error('Error uploading file', err)
-      }
-      setUploading(false)
-    }
-
-    if (file) {
-      upload()
+    if (!status && file) {
+      logger.log('Posting to media endpoint')
+      setStatus('uploading')
+      // Use file as url while uploading
+      // TODO: Rotate image based on exif
+      const fileUrl = URL.createObjectURL(file)
+      setUrl(fileUrl)
+      micropub
+        .postMedia(file)
+        .then((createdUrl) => {
+          logger.log('Upload successful', createdUrl)
+          if (createdUrl) {
+            setUrl(createdUrl)
+          }
+        })
+        .catch((err) => {
+          logger.error('Error uploading file', err)
+          notification({ message: 'Error uploading file' })
+        })
+        .finally(() => {
+          setStatus('done')
+        })
     }
   }, [file])
 
-  return { uploading, url }
+  return { uploading: status === 'uploading', url }
 }
 
 export default useMicropubUpload

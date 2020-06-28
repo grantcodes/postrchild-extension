@@ -60,8 +60,11 @@ const PostrChildEditor = ({
   ...editorProps
 }) => {
   const publishPost = useStoreActions((actions) => actions.publishPost)
+  const suggestActions = useStoreActions((actions) => actions.suggest)
+  const suggestShown = useStoreState((state) => state.suggest.shown)
   const renderElement = useCallback((props) => <Element {...props} />, [])
   const renderLeaf = useCallback((props) => <Leaf {...props} />, [])
+
   const [value, setValue] = useState([
     rich
       ? { type: 'paragraph', children: [{ text: '' }] }
@@ -73,10 +76,20 @@ const PostrChildEditor = ({
     //   : { children: [{ text: initialValue }] }, // TODO: use initial value
   ])
   const editor = useMemo(() => {
+    let createdEditor = withReact(withHistory(createEditor()))
+    // Make store actions available in the editor
+    createdEditor.postrChild = {
+      target: null,
+      submit: publishPost,
+      suggest: {
+        ...suggestActions,
+        shown: false,
+      },
+    }
+
     const hocs = allSlateElements
       .filter((item) => item.hoc)
       .map((item) => item.hoc)
-    let createdEditor = withReact(withHistory(createEditor()))
     if (rich) {
       createdEditor = withShortcuts(createdEditor)
     }
@@ -84,8 +97,6 @@ const PostrChildEditor = ({
       createdEditor = hoc(createdEditor)
     }
 
-    // Make submit function available in the editor
-    createdEditor.postrChildSubmit = publishPost
     return createdEditor
   }, [])
   const onKeyDown = useCallback(keyHandler({ editor }), [editor])
@@ -100,7 +111,7 @@ const PostrChildEditor = ({
     const last = value[value.length - 1]
     // If there's not a paragraph as the last item on a rich editor then add it.
     const newValue =
-      rich && last.type !== 'paragraph'
+      rich && last && last.type !== 'paragraph'
         ? [...value, { type: 'paragraph', children: [{ text: '' }] }]
         : value
     setValue(newValue)

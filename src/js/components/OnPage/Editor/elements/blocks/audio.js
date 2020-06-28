@@ -1,30 +1,29 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
+import { Transforms } from 'slate'
 import { useEditor } from 'slate-react'
 import { MusicVideo as AudioIcon } from 'styled-icons/material'
-import micropub from '../../../../../modules/micropub'
-import { updateElement } from '../../helpers'
+import { updateElement, requestFiles } from '../../helpers'
+import useMicropubUpload from '../../hooks/useMicropubUpload'
+
+const insertAudio = (editor, properties) => {
+  const data = {
+    src: '',
+    ...properties,
+  }
+  const text = { text: '' }
+  const audio = { type: 'audio', ...data, children: [text] }
+  Transforms.insertNodes(editor, audio)
+}
 
 const Audio = ({ attributes, children, element }) => {
   const editor = useEditor()
-  const [uploading, setUploading] = useState(false)
+  const { uploading, url: fileUrl } = useMicropubUpload(element.file)
 
   useEffect(() => {
-    const upload = async () => {
-      const file = element.file
-      if (file) {
-        try {
-          setUploading(true)
-          const fileUrl = await micropub.postMedia(file)
-          updateElement(editor, element, { src: fileUrl, file: null })
-        } catch (err) {
-          alert('Error uploading file')
-          console.error('Error uploading file', err)
-        }
-        setUploading(false)
-      }
+    if (fileUrl) {
+      updateElement(editor, element, { src: fileUrl, file: null })
     }
-    upload()
-  }, [editor, element])
+  }, [editor, element, fileUrl])
 
   return (
     <audio
@@ -50,27 +49,14 @@ export default {
     children: [{ text: '' }],
   }),
   onButtonClick: (editor) => {
-    const el = document.createElement('input')
-    el.type = 'file'
-    el.accept = 'audio/*'
-    el.click()
-    el.onchange = (e) => {
-      for (const file of el.files) {
-        const audioBlock = {
-          type: 'audio',
+    requestFiles({
+      accept: 'audio/*',
+      handleFile: (file) => {
+        insertAudio({
           file,
           src: URL.createObjectURL(file),
-        }
-
-        const { value } = editor
-        const { startBlock } = value
-        if (startBlock.type === 'paragraph' && startBlock.text === '') {
-          editor.setBlocks(audioBlock)
-        } else {
-          editor.moveToEndOfBlock().insertBlock(audioBlock)
-        }
-        editor.insertBlock('paragraph')
-      }
-    }
+        })
+      },
+    })
   },
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 const SuggestList = styled.ol`
@@ -57,14 +57,10 @@ const SuggestItem = styled.li`
     border-bottom: none;
   }
 
-  ${SuggestList}:hover & {
-    color: ${(props) => props.theme.colors.text};
-    background-color: ${(props) => props.theme.colors.background};
-
-    &:hover {
-      color: ${(props) => props.theme.colors.background};
-      background-color: ${(props) => props.theme.colors.main};
-    }
+  // TODO: Make hover style different to focus style
+  &:hover {
+    color: ${(props) => props.theme.colors.background};
+    background-color: ${(props) => props.theme.colors.main};
   }
 `
 
@@ -78,14 +74,20 @@ const SuggestIcon = styled.span`
 
 const AutoSuggester = ({ suggestions, onSelect, selectedIndex }) => (
   <SuggestList>
-    {suggestions.map((s, i) => (
+    {suggestions.map((selection, i) => (
       <SuggestItem
         key={`suggest-item-${i}`}
         selected={selectedIndex === i}
-        onClick={(e) => onSelect(s)}
+        onClick={(e) => {
+          // TODO: This doesn't work - I think because the main editor becomes unfocused on the click event.
+          // e.stopPropagation()
+          // e.nativeEvent.stopImmediatePropagation()
+          // console.log('stopped propagation')
+          // onSelect({ selection })
+        }}
       >
-        <SuggestIcon>{s.icon}</SuggestIcon>
-        <span>{s.text}</span>
+        <SuggestIcon>{selection.icon}</SuggestIcon>
+        <span>{selection.text}</span>
       </SuggestItem>
     ))}
   </SuggestList>

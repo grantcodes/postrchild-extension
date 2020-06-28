@@ -125,10 +125,7 @@ browser.runtime.onMessage.addListener(async (request, sender) => {
       loadEdit()
       break
     case 'showNewPost':
-      // Inject new post editor onto page, can pass in properties to prefill data.
-      const properties = request.properties ? request.properties : {}
-      // TODO: This isn't really run from the reply action
-      loadNew({ properties })
+      loadNew()
       break
   }
   return false

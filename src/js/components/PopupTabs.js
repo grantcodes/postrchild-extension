@@ -10,25 +10,29 @@ const Tabs = styled.nav`
 `
 
 const Tab = styled(Button)`
-  border-radius: 0;
-  width: auto;
-  background: none;
-  border: none;
-  font-size: 9px;
-  padding: 6px 7px 3px 7px;
+  border-radius: 0 !important;
+  width: auto !important;
+  background: none !important;
+  border: none !important;
+  font-size: 14px !important;
+  padding: 6px 7px 3px 7px !important;
   color: ${(props) =>
-    props.current ? props.theme.colors.main : props.theme.colors.disabled};
+    props.current
+      ? props.theme.colors.main
+      : props.theme.colors.disabled} !important;
   border-bottom: 3px solid
     ${(props) =>
-      props.current ? props.theme.colors.main : props.theme.colors.disabled};
-  opacity: ${(props) => (props.current ? 1 : 0.7)};
+      props.current
+        ? props.theme.colors.main
+        : props.theme.colors.disabled} !important;
+  opacity: ${(props) => (props.current ? 1 : 0.7)} !important;
 
   :hover,
   :active,
   :focus {
-    background: none;
-    border-color: ${(props) => props.theme.colors.alt};
-    color: ${(props) => props.theme.colors.main};
+    background: none !important;
+    border-color: ${(props) => props.theme.colors.alt} !important;
+    color: ${(props) => props.theme.colors.main} !important;
   }
 `
 

@@ -59,3 +59,17 @@ export const updateElement = (editor, element, update) => {
   const path = ReactEditor.findPath(editor, element)
   Transforms.setNodes(editor, update, { at: path })
 }
+
+export const requestFiles = ({ accept = '*', handleFile }) => {
+  const el = document.createElement('input')
+  el.type = 'file'
+  el.accept = accept
+  el.click()
+  el.onchange = (e) => {
+    for (const file of el.files) {
+      if (file) {
+        handleFile(file)
+      }
+    }
+  }
+}

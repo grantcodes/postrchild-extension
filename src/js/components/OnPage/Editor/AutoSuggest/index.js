@@ -1,27 +1,30 @@
 import React from 'react'
+import { useStoreState, useStoreActions } from 'easy-peasy'
 import { useSlate } from 'slate-react'
 import Floater from '../Toolbar/Floater'
 import List from './List'
-import suggestionPlugins from './suggestions'
 
 const AutoSuggester = () => {
   const editor = useSlate()
-  const { type, suggestions, target, index } = editor.postrChildAutoSuggest
+  const { target } = editor.postrChild
+  const suggestions = useStoreState((state) => state.suggest.suggestions)
+  const shown = useStoreState((state) => state.suggest.shown)
+  const onSelect = useStoreActions((actions) => actions.suggest.onSelect)
+  const currentSuggestion = useStoreState(
+    (state) => state.suggest.currentSuggestion
+  )
 
-  if (!target || !type || suggestions.length === 0) {
+  if (!target || !shown || suggestions.length === 0) {
     return null
   }
+  console.log({ editor })
 
   return (
     <Floater vertical="bottom" horizontal="left" target={target}>
       <List
-        selectedIndex={index}
+        selectedIndex={currentSuggestion ? currentSuggestion.index : 0}
         suggestions={suggestions}
-        onSelect={(suggestion) =>
-          suggestionPlugins
-            .find((p) => p.id === type)
-            .onSelect({ editor, suggestion })
-        }
+        onSelect={({ suggestion }) => onSelect({ suggestion, editor })}
       />
     </Floater>
   )

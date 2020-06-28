@@ -1,4 +1,5 @@
-import { createStore, action, thunk } from 'easy-peasy'
+import { createStore, action } from 'easy-peasy'
+import suggestModel from './models/suggest'
 import publishPost from './actions/publish-post'
 import setPostProperties from './actions/set-post-properties'
 
@@ -26,6 +27,7 @@ export default createStore({
       'post-status': [],
     },
   },
+  suggest: suggestModel,
   setLoading: action((state, loading) => {
     state.loading = loading
   }),
