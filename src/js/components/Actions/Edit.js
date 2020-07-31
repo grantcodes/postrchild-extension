@@ -1,3 +1,4 @@
+import browser from 'webextension-polyfill'
 import React from 'react'
 import { Edit as Icon } from 'styled-icons/material'
 import Action from './Base'
