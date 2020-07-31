@@ -66,16 +66,22 @@ const PostrChildEditor = ({
   const renderElement = useCallback((props) => <Element {...props} />, [])
   const renderLeaf = useCallback((props) => <Leaf {...props} />, [])
 
-  const [value, setValue] = useState([
-    rich
-      ? { type: 'paragraph', children: [{ text: '' }] }
-      : { children: [{ text: '' }] },
-    // rich && initialValue
-    //   ? deserialize(initialValue)
-    //   : rich
-    //   ? { type: 'paragraph', children: [{ text: '' }] } // TODO: Serialize initialValue
-    //   : { children: [{ text: initialValue }] }, // TODO: use initial value
-  ])
+  // Convert html value to slate object.
+  let value = rich
+    ? [{ type: 'paragraph', children: [{ text: '' }] }]
+    : [{ children: [{ text: '' }] }]
+  if (serializedValue) {
+    value = rich
+      ? deserialize(serializedValue)
+      : [{ children: [{ text: serializedValue }] }]
+  }
+  const last = value[value.length - 1]
+  // If there's not a paragraph as the last item on a rich editor then add it.
+  value =
+    rich && last && last.type !== 'paragraph'
+      ? [...value, { type: 'paragraph', children: [{ text: '' }] }]
+      : value
+
   const editor = useMemo(() => {
     let createdEditor = withReact(withHistory(createEditor()))
     // Make store actions available in the editor
@@ -116,14 +122,13 @@ const PostrChildEditor = ({
       rich && last && last.type !== 'paragraph'
         ? [...value, { type: 'paragraph', children: [{ text: '' }] }]
         : value
-    setValue(newValue)
 
     if (rich) {
-      const html = value ? serialize(value) : ''
+      const html = newValue ? serialize(newValue) : ''
       onChange(html)
     } else {
       // Only return plain text if not a rich editor
-      const text = value[0].children[0].text
+      const text = newValue[0].children[0].text
       onChange(text)
     }
   }

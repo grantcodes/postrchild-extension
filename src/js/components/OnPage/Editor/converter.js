@@ -55,13 +55,13 @@ const deserialize = (el) => {
     logger.log('children', el, el.childNodes)
   }
 
-  // logger.log('deserializing', el)
-
   if (el.nodeType === 3) {
     return el.textContent
   } else if (el.nodeType !== 1) {
     logger.warn('Unknown node type', el)
     return null
+  } else if (el.nodeName === 'BR') {
+    return '\n'
   }
 
   const children = Array.from(el.childNodes).map(deserialize)
@@ -70,7 +70,6 @@ const deserialize = (el) => {
     for (const element of allElements) {
       if (element.domRecognizer(el)) {
         const node = element.deserialize(el, children)
-        // logger.log('Recognized & deserialized as element', element, node)
         return node
       }
     }

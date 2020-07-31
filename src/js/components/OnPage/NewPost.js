@@ -137,7 +137,7 @@ const NewPost = ({ titleEl, contentEl, photoEl }) => {
             onChange={(newTitle) => setProperties({ name: [newTitle] })}
             placeholder="Title..."
             rich={false}
-            initialValue={title}
+            value={title}
           />
 
           <EditorPortal
@@ -145,7 +145,7 @@ const NewPost = ({ titleEl, contentEl, photoEl }) => {
             onChange={(newContent) =>
               setProperties({ content: [{ html: newContent }] })
             }
-            initialValue={content}
+            value={content}
             rich={true}
             onSubmit={handleSubmit}
             autoFocus

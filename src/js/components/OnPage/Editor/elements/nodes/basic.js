@@ -17,8 +17,12 @@ const basicNode = ({ element: El, ...opts }) => {
     render: ({ attributes, children }) => <El {...attributes}>{children}</El>,
     domRecognizer: (el) => el.tagName.toLowerCase() === El.toLowerCase(),
     serialize: (children) => `<${El}>${children}</${El}>`,
-    deserialize: (el, children) =>
-      jsx('element', { type: opts.name }, children),
+    deserialize: (el, children) => {
+      if (children.length === 0) {
+        children = [{ text: '' }]
+      }
+      return jsx('element', { type: opts.name }, children)
+    },
     onButtonClick: (editor) => {
       toggleBlock(editor, opts.name)
     },

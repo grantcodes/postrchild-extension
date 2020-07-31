@@ -5,6 +5,7 @@ import { Input, Label, Button } from '../util'
 
 const Select = (props) => <Input as="select" {...props} />
 const Textarea = (props) => <Input as="textarea" {...props} />
+const Checkbox = (props) => <Input type="checkbox" {...props} />
 
 const PopoutForm = ({
   onChange,
@@ -23,6 +24,7 @@ const PopoutForm = ({
     buttonComponent={Button}
     selectComponent={Select}
     textareaComponent={Textarea}
+    checkboxComponent={Checkbox}
   />
 )
 
