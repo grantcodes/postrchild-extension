@@ -47,6 +47,10 @@ export const isMarkActive = (editor, format) => {
 
 export const isUrl = (url) => {
   try {
+    // Url needs to start with http
+    if (url.startsWith('#')) {
+      return false
+    }
     new URL(url)
   } catch (_) {
     return false

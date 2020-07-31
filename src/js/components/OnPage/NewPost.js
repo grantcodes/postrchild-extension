@@ -7,16 +7,13 @@ import FloatingActions from './FloatingActions'
 import EditorPortal from './EditorPortal'
 import useLoadInitialPost from '../../hooks/load-initial-post'
 import micropub from '../../modules/micropub'
-import * as templateUtils from '../../modules/template-utils'
 import notification from '../../modules/notification'
 import logger from '../../modules/logger'
 
-const NewPost = ({
-  titleEl,
-  contentEl,
-  photoEl,
-  properties: initialProperties,
-}) => {
+// TODO: The editor needs to accept a value property from here,
+// Which also means fixing the html -> slate transformer
+
+const NewPost = ({ titleEl, contentEl, photoEl }) => {
   useLoadInitialPost()
   const [initialLoad, setInitialLoad] = useState(true)
   const [popoutOpen, setPopoutOpen] = useState(false)
@@ -67,7 +64,7 @@ const NewPost = ({
     try {
       await publishPost()
       // Clear cache
-      browser.storage.local.remove('newPostCache')
+      browser.storage.local.remove('newPostPropertiesCache')
 
       if (typeof url == 'string') {
         window.location.href = url
@@ -85,6 +82,30 @@ const NewPost = ({
     setLoading(false)
   }, [post])
 
+  // Cache properties when creating a new post
+  useEffect(() => {
+    // But only store properties with values
+    const newPostPropertiesCache = {}
+    for (const key in properties) {
+      if (properties.hasOwnProperty(key)) {
+        const value = properties[key]
+        if (
+          Array.isArray(value) &&
+          typeof value[0] !== 'undefined' &&
+          value[0] !== ''
+        ) {
+          newPostPropertiesCache[key] = value
+        }
+      }
+    }
+
+    if (Object.keys(newPostPropertiesCache).length) {
+      browser.storage.local.set({ newPostPropertiesCache })
+    } else {
+      browser.storage.local.remove('newPostPropertiesCache')
+    }
+  }, [properties])
+
   const popoutProperties = { ...properties }
   delete popoutProperties.name
   delete popoutProperties.content
@@ -95,7 +116,7 @@ const NewPost = ({
         loading={loading || initialLoad}
         onPublish={handleSubmit}
         onClose={async () => {
-          await browser.storage.local.remove('newPostCache')
+          await browser.storage.local.remove('newPostPropertiesCache')
           window.location.reload()
         }}
         onOptions={() => setPopoutOpen(true)}

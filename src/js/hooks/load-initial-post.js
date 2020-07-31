@@ -13,11 +13,10 @@ const getInitialPost = () => {
       setLoading(true)
       try {
         // Get post from local store
-        const store = await browser.storage.local.get('newPostCache')
-        if (store.newPostCache) {
-          logger.log('[Loading from cache]', store.newPostCache)
-          // TODO: Validate new post cache to only store {key: [array.length > 0]}
-          // setProperties(store.newPostCache)
+        const store = await browser.storage.local.get('newPostPropertiesCache')
+        if (store.newPostPropertiesCache) {
+          logger.log('[Loading from cache]', store.newPostPropertiesCache)
+          setProperties(store.newPostPropertiesCache)
         }
 
         // Get properties from query params

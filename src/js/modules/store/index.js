@@ -1,5 +1,6 @@
 import { createStore, action } from 'easy-peasy'
 import suggestModel from './models/suggest'
+import contactsModel from './models/contacts'
 import publishPost from './actions/publish-post'
 import setPostProperties from './actions/set-post-properties'
 
@@ -10,7 +11,6 @@ export default createStore({
   suggestIndex: 0,
   suggestSelection: null,
   target: null,
-  contacts: [],
   post: {
     type: ['h-entry'],
     properties: {
@@ -28,11 +28,9 @@ export default createStore({
     },
   },
   suggest: suggestModel,
+  contacts: contactsModel,
   setLoading: action((state, loading) => {
     state.loading = loading
-  }),
-  setContacts: action((state, contacts) => {
-    state.contacts = contacts
   }),
   setPostProperties,
   publishPost,

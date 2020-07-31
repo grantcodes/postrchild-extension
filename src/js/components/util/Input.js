@@ -25,4 +25,10 @@ export default styled.input`
     border-color: ${(props) => props.theme.colors.disabled} !important;
     cursor: not-allowed !important;
   }
+
+  &[type='checkbox'],
+  &[type='radio'] {
+    display: inline-block !important;
+    width: auto !important;
+  }
 `

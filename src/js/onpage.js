@@ -28,7 +28,7 @@ const createOnPageContainer = () => {
   return onPageContainer
 }
 
-const loadNew = async (props = {}) => {
+const loadNew = async () => {
   try {
     const newPostContainer = createOnPageContainer()
     logger.log('Got new post container', newPostContainer)
@@ -59,7 +59,6 @@ const loadNew = async (props = {}) => {
               titleEl={els.title}
               contentEl={els.content}
               photoEl={els.photo}
-              {...props}
             />
           </Theme>
         </StoreProvider>,

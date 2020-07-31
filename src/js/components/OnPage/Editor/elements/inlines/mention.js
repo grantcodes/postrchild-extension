@@ -6,13 +6,13 @@ import { updateElement } from '../../helpers'
 const Mention = ({ attributes, element, children }) => {
   const selected = useSelected()
 
-  const { hCard } = element
+  const { url, nickname, name } = element.contact
 
   return (
     <a
       {...attributes}
       className="h-card"
-      href={hCard.properties.url[0]}
+      href={url}
       style={selected ? { backgroundColor: 'rgba(109,160,255,0.2)' } : {}}
       onClick={(e) => {
         // Don't allow mentions to be clicked in the editor
@@ -20,7 +20,7 @@ const Mention = ({ attributes, element, children }) => {
       }}
       contentEditable={false}
     >
-      @{hCard.properties.name[0]}
+      @{nickname || name}
     </a>
   )
 }
@@ -31,8 +31,8 @@ export default {
   showIcon: false,
   render: Mention,
   serialize: (children, element) => {
-    const { url, name } = element.hCard.properties
-    return `<a className="h-card" href="${url[0]}">@${name[0]}</a>`
+    const { url, name, nickname } = element.contact
+    return `<a className="h-card" href="${url}">@${nickname || name}</a>`
   },
   domRecognizer: (el) =>
     el.tagName.toLowerCase() === 'a' &&
@@ -40,16 +40,11 @@ export default {
     el.innerText === el.innerHTML,
   deserialize: (el, children) => ({
     type: 'mention',
-    hCard: {
-      type: ['h-card'],
-      properties: {
-        url: [el.href],
-        name: [
-          el.innerText.startsWith('@')
-            ? el.innerText.substring(1)
-            : el.innerText,
-        ],
-      },
+    contact: {
+      url: el.href,
+      name: el.innerText.startsWith('@')
+        ? el.innerText.substring(1)
+        : el.innerText,
     },
     children: [{ text: '' }],
   }),

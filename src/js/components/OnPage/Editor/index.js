@@ -9,9 +9,9 @@ import { withHistory } from 'slate-history'
 // import CollapseOnEscape from 'slate-collapse-on-escape'
 import SelectionToolbar from './Toolbar/Selection'
 import AutoSuggest from './AutoSuggest'
+import useContacts from './hooks/useContacts'
 import { withShortcuts, keyHandler } from './key-handlers'
 import { serialize, deserialize } from './converter'
-// import suggestionPlugins from './suggestions'
 import * as slateElements from './elements'
 const allSlateElements = [
   ...slateElements.blocks,
@@ -57,11 +57,12 @@ const PostrChildEditor = ({
   placeholder,
   autoFocus,
   onSubmit,
+  value: serializedValue,
   ...editorProps
 }) => {
   const publishPost = useStoreActions((actions) => actions.publishPost)
   const suggestActions = useStoreActions((actions) => actions.suggest)
-  const suggestShown = useStoreState((state) => state.suggest.shown)
+  const contacts = useContacts(rich)
   const renderElement = useCallback((props) => <Element {...props} />, [])
   const renderLeaf = useCallback((props) => <Leaf {...props} />, [])
 
@@ -85,6 +86,7 @@ const PostrChildEditor = ({
         ...suggestActions,
         shown: false,
       },
+      contacts,
     }
 
     const hocs = allSlateElements
@@ -127,30 +129,20 @@ const PostrChildEditor = ({
   }
 
   return (
-    <>
-      <Slate editor={editor} value={value} onChange={handleChange}>
-        <Editable
-          spellCheck
-          placeholder={placeholder}
-          autoFocus={autoFocus}
-          renderLeaf={renderLeaf}
-          renderElement={renderElement}
-          className="postrchild-inline-editor"
-          onKeyDown={rich ? onKeyDown : null}
-          {...editorProps}
-        />
-        {rich && <SelectionToolbar />}
-        {rich && <AutoSuggest />}
-      </Slate>
-      {/* <button
-        onClick={(e) => {
-          e.preventDefault()
-          onSubmit()
-        }}
-      >
-        Submit?
-      </button> */}
-    </>
+    <Slate editor={editor} value={value} onChange={handleChange}>
+      <Editable
+        spellCheck
+        placeholder={placeholder}
+        autoFocus={autoFocus}
+        renderLeaf={renderLeaf}
+        renderElement={renderElement}
+        className="postrchild-inline-editor"
+        onKeyDown={rich ? onKeyDown : null}
+        {...editorProps}
+      />
+      {rich && <SelectionToolbar />}
+      {rich && <AutoSuggest />}
+    </Slate>
   )
 }
 
