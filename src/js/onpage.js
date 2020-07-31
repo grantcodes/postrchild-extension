@@ -72,11 +72,25 @@ const loadNew = async () => {
 const loadEdit = async () => {
   const editorContainer = createOnPageContainer()
   if (editorContainer) {
-    logger.log('Loading edit post')
+    const els = getEditorElements(document.getElementsByClassName('h-entry')[0])
+
+    for (const key in els) {
+      if (els.hasOwnProperty(key)) {
+        const el = els[key]
+        if (el && el.innerHTML) {
+          el.innerHTML = ''
+        }
+      }
+    }
+
     render(
       <StoreProvider store={store}>
         <Theme>
-          <EditPost postEl={document.getElementsByClassName('h-entry')[0]} />
+          <EditPost
+            titleEl={els.title}
+            contentEl={els.content}
+            photoEl={els.photo}
+          />
         </Theme>
       </StoreProvider>,
       editorContainer

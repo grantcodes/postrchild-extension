@@ -29,7 +29,7 @@ const getInitialPost = () => {
           }
         }
       } catch (err) {
-        logger.warn('[Error querying micropub endpoint]', err)
+        logger.warn('[Error loading initial properties]', err)
       }
       setLoading(false)
     }

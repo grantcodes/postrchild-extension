@@ -1,54 +1,59 @@
-import React, { Fragment, useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Popout from './Popout'
 import FloatingActions from './FloatingActions'
 import PopoutForm from './PopoutForm'
 import EditorPortal from './EditorPortal'
-import micropub, { uploadMf2FilesToMediaEndpoint } from '../../modules/micropub'
-import * as templateUtils from '../../modules/template-utils'
+import isEqual from 'lodash.isequal'
 import notification from '../../modules/notification'
+import { useStoreState, useStoreActions } from 'easy-peasy'
+import useSourcePost from '../../hooks/source-post'
+import micropub from '../../modules/micropub'
+import logger from '../../modules/logger'
 
-const baseProperties = {
-  'mp-slug': [],
-  featured: [],
-  photo: [],
-  visibility: [],
-  'post-status': [],
+const formatContent = (properties) => {
+  let content = ''
+  if (properties.content && properties.content[0]) {
+    content = properties.content[0]
+    if (typeof content === 'string') {
+      content = `<p>${content}</p>`
+    } else if (typeof content === 'object') {
+      content = content.html || `<p>${content.value}</p>`
+    }
+  }
+  return content
 }
 
-const EditPost = ({ postEl }) => {
+const EditPost = ({ titleEl, contentEl, photoEl }) => {
+  useSourcePost(window.location.href)
   const [initialLoad, setInitialLoad] = useState(true)
-  const [loading, setLoading] = useState(false)
   const [popoutOpen, setPopoutOpen] = useState(false)
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [originalProperties, setOriginalProperties] = useState({})
-  const [syndicationProviders, setSyndicationProviders] = useState([])
-  const [properties, setProperties] = useState(
-    Object.assign({}, baseProperties)
-  )
 
-  const load = async () => {
-    await loadSource()
-    try {
-      if (!micropub.options.mediaEndpoint) {
-        const config = await micropub.query('config')
-        if (config['media-endpoint']) {
-          micropub.options.mediaEndpoint = config['media-endpoint']
-        }
-      }
+  const loading = useStoreState((state) => state.loading)
+  const setLoading = useStoreActions((actions) => actions.setLoading)
+  const setProperties = useStoreActions((actions) => actions.setPostProperties)
+  const post = useStoreState((state) => state.post)
+  const properties = useStoreState((state) => state.post.properties)
+  const content = formatContent(properties)
+  const title = properties.name ? properties.name[0] : ''
 
-      const res = await micropub.query('syndicate-to')
-      if (res['syndicate-to']) {
-        setSyndicationProviders(['syndicate-to'])
-      }
-    } catch (err) {
-      console.warn('[Error querying micropub endpoint]', err)
-    }
-    setInitialLoad(false)
-  }
-
+  // TODO: Initial loading stuff can probably use react suspense
   useEffect(() => {
-    load()
+    const didMount = async () => {
+      try {
+        // Get media endpoint
+        if (!micropub.options.mediaEndpoint) {
+          const config = await micropub.query('config')
+          if (config['media-endpoint']) {
+            micropub.options.mediaEndpoint = config['media-endpoint']
+          }
+        }
+      } catch (err) {
+        logger.warn('[Error querying micropub endpoint]', err)
+      }
+      setInitialLoad(false)
+      setLoading(false)
+    }
+    didMount()
   }, [])
 
   const handleDelete = async () => {
@@ -57,155 +62,103 @@ const EditPost = ({ postEl }) => {
         await micropub.delete(window.location.href)
         window.location.reload()
       } catch (err) {
-        console.error('[Error deleting]', err)
+        logger.error('[Error deleting]', err)
         notification({ message: 'Error deleting post' })
       }
     }
   }
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     setLoading(true)
-    let mf2 = { type: ['h-entry'], properties: { ...properties } }
-    if (title) {
-      mf2.properties.name = [title]
-    }
-    if (content) {
-      mf2.properties.content = [{ html: content }]
-    }
-
     try {
-      mf2 = await uploadMf2FilesToMediaEndpoint(mf2)
-    } catch (err) {
-      return notification({
-        title: 'Error uploading files to media endpoint',
-        message: err.message,
-      })
-    }
+      const original = await micropub.querySource(window.location.href)
 
-    let update = {
-      replace: {},
-    }
+      let update = {
+        replace: {},
+      }
 
-    for (const key in mf2.properties) {
-      if (mf2.properties.hasOwnProperty(key)) {
-        const value = mf2.properties[key]
-        const ogValue = originalProperties[key]
-        if (
-          value &&
-          value[0] &&
-          (!ogValue || !ogValue[0] || ogValue != value)
-        ) {
-          update.replace[key] = value
+      for (const key in post.properties) {
+        if (post.properties.hasOwnProperty(key)) {
+          const value = post.properties[key]
+          const ogValue = original.properties[key]
+
+          if (
+            value &&
+            value[0] &&
+            (!ogValue || !ogValue[0] || !isEqual(value, ogValue))
+          ) {
+            update.replace[key] = value
+          }
         }
       }
-    }
 
-    if (Object.keys(update.replace).length) {
-      try {
-        await micropub.update(window.location.href, update)
-        window.location.reload()
-      } catch (err) {
-        console.error('[Error updating post]', err)
-        notification({ title: 'Error updating post', message: err.message })
+      if (Object.keys(update.replace).length) {
+        try {
+          logger.log('Sending update', update)
+          await micropub.update(window.location.href, update)
+          window.location.reload()
+        } catch (err) {
+          console.error('[Error updating post]', err)
+          notification({ title: 'Error updating post', message: err.message })
+        }
+      } else {
+        notification({ message: 'Nothing appears to be updated' })
       }
-    } else {
-      notification({ message: 'Nothing appears to be updated' })
+    } catch (err) {
+      logger.error('[Error updating post]', err)
+      notification({
+        title: 'Error updating post',
+        message: err.message || 'Unknown error',
+      })
     }
     setLoading(false)
-  }
+  }, [post])
 
-  const loadSource = async () => {
-    try {
-      const {
-        title: titleEl,
-        content: contentEl,
-      } = templateUtils.getEditorElements(postEl)
-
-      const post = await micropub.querySource(window.location.href)
-
-      let title = titleEl.innerText || ''
-      if (post.properties && post.properties.name && post.properties.name[0]) {
-        title = post.properties.name[0]
-        delete post.properties.name
-      }
-      setTitle(title.trim())
-
-      let content = contentEl.innerHTML || ''
-      if (
-        post.properties &&
-        post.properties.content &&
-        post.properties.content[0]
-      ) {
-        let content = post.properties.content[0]
-        if (typeof content == 'object' && (content.html || content.value)) {
-          content = content.html || content.value
-        }
-        delete post.properties.content
-      }
-      setContent(content.trim())
-
-      if (post && post.properties) {
-        setOriginalProperties(Object.assign({}, post.properties))
-        setProperties(Object.assign({}, baseProperties, post.properties))
-      }
-
-      setLoading(false)
-    } catch (err) {
-      console.warn('[Query error]', err)
-      notification({
-        title: 'Error running query source on your post',
-        message:
-          'You can still edit the post, but there is potential for data loss or unintended changes',
-      })
-    }
-  }
-
-  const {
-    title: titleEl,
-    content: contentEl,
-  } = templateUtils.getEditorElements(postEl)
-
-  console.log('EditPost', { titleEl, contentEl })
+  const popoutProperties = { ...properties }
+  delete popoutProperties.name
+  delete popoutProperties.content
 
   return (
-    <Fragment>
+    <>
       <FloatingActions
-        loading={loading}
+        loading={loading || initialLoad}
+        onPublish={handleSubmit}
         onClose={window.location.reload}
         onDelete={handleDelete}
         onOptions={() => setPopoutOpen(true)}
-        onPublish={handleSubmit}
         publishText="Save Post"
       />
 
       {!initialLoad && (
-        <Fragment>
+        <>
           <Popout open={popoutOpen} onClose={() => setPopoutOpen(false)}>
             <PopoutForm
+              properties={popoutProperties}
               onChange={setProperties}
-              properties={properties}
-              syndication={syndicationProviders}
             />
           </Popout>
-          {titleEl && (
-            <EditorPortal
-              el={titleEl}
-              value={title}
-              placeholder="Title..."
-              rich={false}
-              onChange={(title) => setTitle(title)}
-            />
-          )}
-          {contentEl && (
-            <EditorPortal
-              el={contentEl}
-              value={content}
-              onChange={(content) => setContent(content)}
-            />
-          )}
-        </Fragment>
+
+          <EditorPortal
+            el={titleEl}
+            onChange={(newTitle) => setProperties({ name: [newTitle] })}
+            placeholder="Title..."
+            rich={false}
+            value={title}
+          />
+
+          <EditorPortal
+            el={contentEl}
+            onChange={(newContent) =>
+              setProperties({ content: [{ html: newContent }] })
+            }
+            value={content}
+            rich={true}
+            onSubmit={handleSubmit}
+            autoFocus
+          />
+        </>
       )}
-    </Fragment>
+    </>
   )
 }
 

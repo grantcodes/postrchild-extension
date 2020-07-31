@@ -10,16 +10,12 @@ import micropub from '../../modules/micropub'
 import notification from '../../modules/notification'
 import logger from '../../modules/logger'
 
-// TODO: The editor needs to accept a value property from here,
-// Which also means fixing the html -> slate transformer
-
 const NewPost = ({ titleEl, contentEl, photoEl }) => {
   useLoadInitialPost()
   const [initialLoad, setInitialLoad] = useState(true)
   const [popoutOpen, setPopoutOpen] = useState(false)
   const [syndicationProviders, setSyndicationProviders] = useState([])
 
-  // TODO: Set initial properties
   const loading = useStoreState((state) => state.loading)
   const setLoading = useStoreActions((actions) => actions.setLoading)
   const setProperties = useStoreActions((actions) => actions.setPostProperties)
