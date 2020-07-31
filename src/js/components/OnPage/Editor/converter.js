@@ -52,7 +52,6 @@ const deserialize = (el) => {
     const div = document.createElement('div')
     div.innerHTML = el
     el = div
-    logger.log('children', el, el.childNodes)
   }
 
   if (el.nodeType === 3) {

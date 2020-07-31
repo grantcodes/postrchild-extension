@@ -1,6 +1,7 @@
 const webpack = require('webpack')
 const path = require('path')
-const webExt = require('web-ext').default
+const webExt = require('web-ext')
+const TerserPlugin = require('terser-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -37,7 +38,17 @@ const config = {
   mode: devMode ? 'development' : 'production',
   devtool: devMode ? 'cheap-module-eval-source-map' : 'source-map',
   optimization: {
-    minimize: false, // Minimization breaks utf-8 encoding because of something inside slate-react
+    minimize: !devMode,
+    minimizer: [
+      new TerserPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: devMode,
+        terserOptions: {
+          output: { ascii_only: true },
+        },
+      }),
+    ],
   },
   module: {
     rules: [
