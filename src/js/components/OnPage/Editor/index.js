@@ -50,8 +50,20 @@ const Leaf = ({ attributes, children, leaf }) => {
   return <span {...attributes}>{children}</span>
 }
 
+const initialValue = ({ rich, serializedValue }) => {
+  let value = rich
+    ? [{ type: 'paragraph', children: [{ text: '' }] }]
+    : [{ children: [{ text: '' }] }]
+
+  if (serializedValue) {
+    value = rich
+      ? deserialize(serializedValue)
+      : [{ children: [{ text: serializedValue }] }]
+  }
+  return value
+}
+
 const PostrChildEditor = ({
-  initialValue = '',
   onChange,
   rich,
   placeholder,
@@ -64,22 +76,8 @@ const PostrChildEditor = ({
   const contacts = useContacts(rich)
   const renderElement = useCallback((props) => <Element {...props} />, [])
   const renderLeaf = useCallback((props) => <Leaf {...props} />, [])
-
-  // Convert html value to slate object.
-  let value = rich
-    ? [{ type: 'paragraph', children: [{ text: '' }] }]
-    : [{ children: [{ text: '' }] }]
-  if (serializedValue) {
-    value = rich
-      ? deserialize(serializedValue)
-      : [{ children: [{ text: serializedValue }] }]
-  }
-  const last = value[value.length - 1]
-  // If there's not a paragraph as the last item on a rich editor then add it.
-  value =
-    rich && last && last.type !== 'paragraph'
-      ? [...value, { type: 'paragraph', children: [{ text: '' }] }]
-      : value
+  // TODO: Loading in initial values might not work if they are not passed on first render
+  const [value, setValue] = useState(initialValue({ rich, serializedValue }))
 
   const editor = useMemo(() => {
     let createdEditor = withReact(withHistory(createEditor()))
@@ -121,6 +119,7 @@ const PostrChildEditor = ({
       rich && last && last.type !== 'paragraph'
         ? [...value, { type: 'paragraph', children: [{ text: '' }] }]
         : value
+    setValue(newValue)
 
     if (rich) {
       const html = newValue ? serialize(newValue) : ''

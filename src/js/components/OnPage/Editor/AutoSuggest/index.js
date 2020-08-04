@@ -6,15 +6,11 @@ import List from './List'
 
 const AutoSuggester = () => {
   const editor = useSlate()
-  const { target } = editor.postrChild
-
   // Get suggestion store
-  const suggestions = useStoreState((state) => state.suggest.suggestions)
-  const shown = useStoreState((state) => state.suggest.shown)
-  const onSelect = useStoreActions((actions) => actions.suggest.onSelect)
-  const currentSuggestion = useStoreState(
-    (state) => state.suggest.currentSuggestion
+  const { target, suggestions, shown, currentSuggestion } = useStoreState(
+    (state) => state.suggest
   )
+  const onSelect = useStoreActions((actions) => actions.suggest.onSelect)
 
   if (!target || !shown || suggestions.length === 0) {
     return null

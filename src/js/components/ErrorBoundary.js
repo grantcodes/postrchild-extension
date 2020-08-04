@@ -1,5 +1,6 @@
 import React from 'react'
 import notification from '../modules/notification'
+import logger from '../modules/logger'
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -12,7 +13,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error('[React Error]', error, errorInfo)
+    logger.error('[React Error]', error, errorInfo)
     notification({ title: 'Uh Oh', message: 'An uncaught error occurred' })
   }
 

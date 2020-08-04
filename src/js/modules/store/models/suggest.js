@@ -6,12 +6,16 @@ export default {
   shown: false,
   suggestions: [],
   currentSuggestion: null,
+  target: null,
   show: action((state) => {
     state.shown = true
   }),
   hide: action((state) => {
     state.shown = false
     state.suggestions = []
+  }),
+  setTarget: action((state, payload) => {
+    state.target = payload
   }),
   up: action((state, { event, editor }) => {
     if (state.shown) {
