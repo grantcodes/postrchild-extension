@@ -60,7 +60,6 @@ const PostrChildEditor = ({
   value: serializedValue,
   ...editorProps
 }) => {
-  const publishPost = useStoreActions((actions) => actions.publishPost)
   const suggestActions = useStoreActions((actions) => actions.suggest)
   const contacts = useContacts(rich)
   const renderElement = useCallback((props) => <Element {...props} />, [])
@@ -87,7 +86,7 @@ const PostrChildEditor = ({
     // Make store actions available in the editor
     createdEditor.postrChild = {
       target: null,
-      submit: publishPost,
+      submit: onSubmit,
       suggest: {
         ...suggestActions,
         shown: false,
@@ -163,6 +162,7 @@ PostrChildEditor.defaultProps = {
   rich: true,
   value: '',
   onChange: () => {},
+  onSubmit: () => {},
   placeholder: 'Content...',
   autoFocus: false,
 }

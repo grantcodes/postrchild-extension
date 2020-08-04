@@ -151,9 +151,9 @@ const EditPost = ({ titleEl, contentEl, photoEl }) => {
             onChange={(newContent) =>
               setProperties({ content: [{ html: newContent }] })
             }
+            onSubmit={handleSubmit}
             value={content}
             rich={true}
-            onSubmit={handleSubmit}
             autoFocus
           />
         </>

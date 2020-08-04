@@ -60,7 +60,7 @@ const NewPost = ({ titleEl, contentEl, photoEl }) => {
     try {
       await publishPost()
       // Clear cache
-      browser.storage.local.remove('newPostPropertiesCache')
+      await browser.storage.local.remove('newPostPropertiesCache')
 
       if (typeof url == 'string') {
         window.location.href = url
@@ -141,9 +141,9 @@ const NewPost = ({ titleEl, contentEl, photoEl }) => {
             onChange={(newContent) =>
               setProperties({ content: [{ html: newContent }] })
             }
+            onSubmit={handleSubmit}
             value={content}
             rich={true}
-            onSubmit={handleSubmit}
             autoFocus
           />
         </>
