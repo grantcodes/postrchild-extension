@@ -71,7 +71,7 @@ const mentionsSuggestion = {
     }
     Transforms.insertNodes(editor, mention)
     Transforms.move(editor)
-    editor.postrChildAutoSuggestReset()
+    editor.postrChild.suggest.reset()
   },
 }
 

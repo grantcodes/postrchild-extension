@@ -56,7 +56,7 @@ const emojiSuggestion = {
     const target = getBeforeRange(editor)
     Transforms.select(editor, target)
     Transforms.insertText(editor, suggestion.icon)
-    editor.postrChildAutoSuggestReset(editor)
+    editor.postrChild.suggest.reset()
   },
 }
 

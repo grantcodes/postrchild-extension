@@ -81,7 +81,7 @@ const blocksSuggestion = {
     Transforms.select(editor, target)
     Transforms.removeNodes(editor)
     block.onButtonClick(editor)
-    editor.postrChildAutoSuggestReset()
+    editor.postrChild.suggest.reset()
   },
 }
 
