@@ -153,6 +153,7 @@ export default {
             reader.readAsDataURL(file)
           }
         }
+        // TODO: Check if is a video url
         // } else if (isImageUrl(text)) {
         //   insertVideo(editor, { src: text })
       } else {

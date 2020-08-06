@@ -92,18 +92,20 @@ const PostrChildEditor = ({
       contacts,
     }
 
-    const hocs = allSlateElements
-      .filter((item) => item.hoc)
-      .map((item) => item.hoc)
     if (rich) {
       createdEditor = withShortcuts(createdEditor)
-    }
-    for (const hoc of hocs) {
-      createdEditor = hoc(createdEditor)
+      const hocs = allSlateElements
+        .filter((item) => item.hoc)
+        .map((item) => item.hoc)
+        .reverse() // To make sure block hocs are run before others
+      for (const hoc of hocs) {
+        createdEditor = hoc(createdEditor)
+      }
     }
 
     return createdEditor
   }, [])
+
   const onKeyDown = useCallback(keyHandler({ editor }), [editor])
 
   if (editorProps.className) {

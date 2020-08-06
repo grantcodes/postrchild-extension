@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { Transforms } from 'slate'
 import { useEditor, useSelected } from 'slate-react'
+import imageExtensions from 'image-extensions'
 import Button from '../../../../util/Button'
 import { PhotoSizeSelectActual as ImageIcon } from 'styled-icons/material'
 import Overlay from '../../Toolbar/Overlay'
@@ -18,6 +19,7 @@ const withImages = (editor) => {
   editor.insertData = (data) => {
     const text = data.getData('text/plain')
     const { files } = data
+    let hasInsertedImage = false
 
     if (files && files.length > 0) {
       for (const file of files) {
@@ -25,17 +27,22 @@ const withImages = (editor) => {
         const [mime] = file.type.split('/')
 
         if (mime === 'image') {
+          hasInsertedImage = true
+
           reader.addEventListener('load', () => {
             const url = reader.result
-            insertImage(editor, url)
+            insertImage(editor, { src: url })
           })
 
           reader.readAsDataURL(file)
         }
       }
     } else if (isImageUrl(text)) {
+      hasInsertedImage = true
       insertImage(editor, { src: text })
-    } else {
+    }
+
+    if (!hasInsertedImage) {
       insertData(data)
     }
   }
@@ -75,9 +82,7 @@ const isImageUrl = (url) => {
   if (!url) return false
   if (!isUrl(url)) return false
   const ext = new URL(url).pathname.split('.').pop()
-  // TODO: Figure out why i need this and fix it
-  return false
-  // return imageExtensions.includes(ext)
+  return imageExtensions.includes(ext)
 }
 
 const Image = ({ attributes, children, element }) => {
