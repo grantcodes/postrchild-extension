@@ -1,12 +1,20 @@
 import React, { useEffect } from 'react'
 import { Transforms } from 'slate'
 import { useEditor, useSelected } from 'slate-react'
+import videoExtensions from 'video-extensions'
 import Button from '../../../../util/Button'
 import { Movie as VideoIcon } from 'styled-icons/material'
 import Overlay from '../../Toolbar/Overlay'
 import AlignmentButtons from '../../Toolbar/AlignmentButtons'
-import { updateElement, requestFiles } from '../../helpers'
+import { updateElement, requestFiles, isUrl } from '../../helpers'
 import useMicropubUpload from '../../hooks/useMicropubUpload'
+
+const isVideoUrl = (url) => {
+  if (!url) return false
+  if (!isUrl(url)) return false
+  const ext = new URL(url).pathname.split('.').pop()
+  return videoExtensions.includes(ext)
+}
 
 const insertVideo = (editor, properties) => {
   const data = {
@@ -63,7 +71,7 @@ const Video = ({ attributes, children, element }) => {
               onClick={(e) => {
                 e.preventDefault()
                 requestFiles({
-                  accept: 'image/*',
+                  accept: 'video/*',
                   handleFile: (file) => {
                     updateElement(editor, element, { posterFile: file })
                   },
@@ -138,6 +146,7 @@ export default {
     editor.insertData = (data) => {
       const text = data.getData('text/plain')
       const { files } = data
+      let hasInsertedVideo = false
 
       if (files && files.length > 0) {
         for (const file of files) {
@@ -145,18 +154,22 @@ export default {
           const [mime] = file.type.split('/')
 
           if (mime === 'video') {
+            hasInsertedVideo = true
+
             reader.addEventListener('load', () => {
               const url = reader.result
-              insertVideo(editor, url)
+              insertVideo(editor, { src: url })
             })
 
             reader.readAsDataURL(file)
           }
         }
-        // TODO: Check if is a video url
-        // } else if (isImageUrl(text)) {
-        //   insertVideo(editor, { src: text })
-      } else {
+      } else if (isVideoUrl(text)) {
+        hasInsertedVideo = true
+        insertVideo(editor, { src: text })
+      }
+
+      if (!hasInsertedVideo) {
         insertData(data)
       }
     }

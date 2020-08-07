@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@postrchild/editor-base": "^2.3.1",
+    "audio-extensions": "0.0.0",
     "easy-peasy": "^3.3.1",
     "emojilib": "^2.4.0",
     "html-react-parser": "^0.13.0",
@@ -31,6 +32,7 @@
     "slate-react": "^0.58.4",
     "styled-components": "^5.1.1",
     "styled-icons": "^10.14.1",
+    "video-extensions": "^1.1.0",
     "webextension-polyfill": "^0.6.0"
   },
   "devDependencies": {

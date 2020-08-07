@@ -9,6 +9,25 @@ import AlignmentButtons from '../../Toolbar/AlignmentButtons'
 import { isUrl, updateElement, requestFiles } from '../../helpers'
 import useMicropubUpload from '../../hooks/useMicropubUpload'
 
+const insertImage = (editor, properties) => {
+  const data = {
+    src: '',
+    alt: '',
+    class: '',
+    ...properties,
+  }
+  const text = { text: '' }
+  const image = { type: 'image', ...data, children: [text] }
+  Transforms.insertNodes(editor, image)
+}
+
+const isImageUrl = (url) => {
+  if (!url) return false
+  if (!isUrl(url)) return false
+  const ext = new URL(url).pathname.split('.').pop()
+  return imageExtensions.includes(ext)
+}
+
 const withImages = (editor) => {
   const { insertData, isVoid } = editor
 
@@ -50,18 +69,6 @@ const withImages = (editor) => {
   return editor
 }
 
-const insertImage = (editor, properties) => {
-  const data = {
-    src: '',
-    alt: '',
-    class: '',
-    ...properties,
-  }
-  const text = { text: '' }
-  const image = { type: 'image', ...data, children: [text] }
-  Transforms.insertNodes(editor, image)
-}
-
 // const InsertImageButton = () => {
 //   const editor = useEditor()
 //   return (
@@ -78,18 +85,10 @@ const insertImage = (editor, properties) => {
 //   )
 // }
 
-const isImageUrl = (url) => {
-  if (!url) return false
-  if (!isUrl(url)) return false
-  const ext = new URL(url).pathname.split('.').pop()
-  return imageExtensions.includes(ext)
-}
-
 const Image = ({ attributes, children, element }) => {
   const editor = useEditor()
   const selected = useSelected()
   // const focused = useFocused()
-
   const { uploading, url: fileUrl } = useMicropubUpload(element.file)
 
   useEffect(() => {
