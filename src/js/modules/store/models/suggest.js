@@ -45,7 +45,7 @@ export default {
       }
     }
   }),
-  reset: action((state, { event, editor }) => {
+  reset: action((state) => {
     state.suggestions = []
     state.shown = false
     state.currentSuggestion = null

@@ -8,7 +8,7 @@ const onEnter = (editor) => {
 
     if (selection && Range.isCollapsed(selection)) {
       const [block, path] = Editor.above(editor, {
-        match: (n) => Editor.isBlock(editor, n) || Editor.isMar,
+        match: (n) => Editor.isBlock(editor, n),
       })
       const mark = Object.keys(Editor.marks(editor))[0] || null
 

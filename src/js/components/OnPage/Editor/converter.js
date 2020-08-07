@@ -56,11 +56,11 @@ const deserialize = (el) => {
 
   if (el.nodeType === 3) {
     return el.textContent
+  } else if (el.nodeName === 'BR') {
+    return '\n'
   } else if (el.nodeType !== 1) {
     logger.warn('Unknown node type', el)
     return null
-  } else if (el.nodeName === 'BR') {
-    return '\n'
   }
 
   const children = Array.from(el.childNodes).map(deserialize)

@@ -5,7 +5,6 @@ import {
   TextFormat,
   FormatQuote,
   FormatListNumbered,
-  Code,
 } from 'styled-icons/material'
 import basicNode from './basic'
 
@@ -96,15 +95,4 @@ const li = basicNode({
   icon: <FormatListBulleted />,
 })
 
-const pre = basicNode({
-  name: 'code-block',
-  element: ({ children, ...props }) => (
-    <pre {...props}>
-      <code>{children}</code>
-    </pre>
-  ),
-  domRecognizer: (el) => el.tagName.toLowerCase() === 'pre',
-  icon: <Code />,
-})
-
-export default [p, h1, h2, h3, h4, h5, h6, blockquote, ul, ol, li, pre]
+export default [p, h1, h2, h3, h4, h5, h6, blockquote, ul, ol, li]
