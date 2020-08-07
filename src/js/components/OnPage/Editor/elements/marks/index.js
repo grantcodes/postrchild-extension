@@ -11,6 +11,9 @@ const code = basicMark({
   name: 'code',
   element: 'code',
   icon: <Code />,
+  domRecognizer: (el) =>
+    el.tagName.toLowerCase() === 'code' &&
+    el.parentNode.tagName.toLowerCase() !== 'pre',
 })
 
 const strong = basicMark({

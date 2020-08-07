@@ -26,7 +26,6 @@ const basicMark = ({ element: El, ...opts }) => {
 
   for (const key of required) {
     if (!data[key]) {
-      console.log(data)
       throw new Error(`Mark missing ${key} property`)
     }
   }

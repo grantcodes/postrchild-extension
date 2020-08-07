@@ -6,6 +6,7 @@ import AlignmentButtons from '../../Toolbar/AlignmentButtons'
 import Button from '../../../../util/Button'
 import { updateElement } from '../../helpers'
 import { Code as CodeIcon } from 'styled-icons/material'
+import { escape as htmlEntities } from 'he'
 
 const withCodeBlock = (editor) => {
   const { insertBreak } = editor
@@ -46,7 +47,6 @@ const withCodeBlock = (editor) => {
 const Code = ({ attributes, element, children }) => {
   const editor = useEditor()
   const selected = useSelected()
-  console.log({ children })
 
   return (
     <pre className={element.class} {...attributes}>
@@ -90,20 +90,18 @@ export default {
   serialize: (children, element) =>
     `<pre class="${element.class}"><code class="language-${
       element.language || 'none'
-    }">${children}</code></pre>`,
+    }">${htmlEntities(children)}</code></pre>`,
+
   domRecognizer: (el) =>
     el.tagName.toLowerCase() === 'pre' &&
     el.children.length === 1 &&
     el.children[0].tagName.toLowerCase() === 'code',
-  deserialize: (el) => {
-    console.log('deserializing children', el.children[0].children)
-    return {
-      type: 'code-block',
-      class: el.className,
-      language: el.children[0].className.replace('language-', ''),
-      children: [{ text: el.children[0].innerText, placeholder: 'Code block' }],
-    }
-  },
+  deserialize: (el, children) => ({
+    type: 'code-block',
+    class: el.className || '',
+    language: el.children[0].className.replace('language-', ''),
+    children: [{ text: el.children[0].innerText, placeholder: 'Code block' }],
+  }),
   onButtonClick: (editor) => {
     const codeBlock = {
       type: 'code-block',
