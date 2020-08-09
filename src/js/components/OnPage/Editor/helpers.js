@@ -1,7 +1,7 @@
 import { Editor, Transforms } from 'slate'
 import { ReactEditor } from 'slate-react'
 
-const LIST_TYPES = ['numbered-list', 'bulleted-list']
+const LIST_TYPES = ['unordered-list', 'ordered-list']
 
 export const toggleBlock = (editor, format) => {
   const isActive = isBlockActive(editor, format)

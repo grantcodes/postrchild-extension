@@ -1,4 +1,4 @@
-import { Editor, Transforms, Range, Point } from 'slate'
+import { Editor, Transforms, Range, Node } from 'slate'
 
 const onEnter = (editor) => {
   const { insertBreak } = editor
@@ -31,8 +31,18 @@ const onEnter = (editor) => {
           },
           split: true,
         })
-        // Change current li item to paragraph
-        Transforms.setNodes(editor, { type: 'paragraph' })
+
+        const parent = Node.parent(editor, path)
+
+        if (
+          parent &&
+          (parent.type === 'unordered-list' || parent.type === 'ordered-list')
+        ) {
+          Transforms.setNodes(editor, { type: 'list-item' })
+        } else {
+          // Change current li item to paragraph
+          Transforms.setNodes(editor, { type: 'paragraph' })
+        }
         return
       }
 

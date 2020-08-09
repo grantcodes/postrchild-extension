@@ -1,4 +1,4 @@
-import { Editor, Transforms, Range, Point } from 'slate'
+import { Editor, Transforms, Range, Point, Node } from 'slate'
 
 const onBackspace = (editor) => {
   const { deleteBackward } = editor
@@ -19,16 +19,38 @@ const onBackspace = (editor) => {
           block.type !== 'paragraph' &&
           Point.equals(selection.anchor, start)
         ) {
-          Transforms.setNodes(editor, { type: 'paragraph' })
-
           if (block.type === 'list-item') {
+            const parent = Node.parent(editor, path)
+            const [listParent, listParentPath] = Editor.above(editor, {
+              match: (n) =>
+                n.type === 'unordered-list' || n.type === 'ordered-list',
+            })
+            console.log('Want to jump back to parent list', {
+              block,
+              path,
+              start,
+              selection,
+              listParent,
+            })
+
             Transforms.unwrapNodes(editor, {
               match: (n) =>
                 n.type === 'unordered-list' || n.type === 'ordered-list',
               split: true,
             })
+            if (
+              parent &&
+              (parent.type === 'unordered-list' ||
+                parent.type === 'ordered-list')
+            ) {
+              Transforms.setNodes(editor, { type: 'list-item' })
+            } else {
+              Transforms.setNodes(editor, { type: 'paragram' })
+            }
+            return
           }
 
+          Transforms.setNodes(editor, { type: 'paragraph' })
           return
         }
       }
