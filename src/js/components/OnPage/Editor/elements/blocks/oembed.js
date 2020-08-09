@@ -4,9 +4,9 @@ import { useEditor, useSelected } from 'slate-react'
 import parseReact from 'html-react-parser'
 import { WebAsset as OembedIcon } from 'styled-icons/material'
 import Overlay from '../../Toolbar/Overlay'
-import AlignmentButtons from '../../Toolbar/AlignmentButtons'
 import { updateElement } from '../../helpers'
 import notification from '../../../../../modules/notification'
+import withAlignment from '../with-alignment'
 
 const getEmbedHtml = async (url) => {
   const res = await fetch(
@@ -19,7 +19,7 @@ const getEmbedHtml = async (url) => {
   return data.html
 }
 
-const Oembed = ({ attributes, element, children }) => {
+const Oembed = ({ attributes, element, children, AlignmentButtons }) => {
   const editor = useEditor()
   const selected = useSelected()
   const [loading, setLoading] = useState(false)
@@ -54,23 +54,14 @@ const Oembed = ({ attributes, element, children }) => {
       {element.html && parseReact(element.html)}
       {selected && (
         <Overlay>
-          <AlignmentButtons
-            alignment={(
-              element.class.replace('postrchild-oembed', '').trim() || 'none'
-            ).replace('align', '')}
-            onChange={(alignment) =>
-              updateElement(editor, element, {
-                class: 'postrchild-oembed align' + alignment,
-              })
-            }
-          />
+          <AlignmentButtons />
         </Overlay>
       )}
     </div>
   )
 }
 
-export default {
+export default withAlignment({
   name: 'oembed',
   keywords: ['oembed', 'embed', 'youtube', 'external'],
   icon: <OembedIcon />,
@@ -92,11 +83,11 @@ export default {
     const oembedBlock = {
       type: 'oembed',
       url,
-      class: 'postrchild-oembed alignnone',
+      class: 'postrchild-oembed',
       html: '',
       children: [{ text: '' }],
     }
 
     Transforms.insertNodes(editor, oembedBlock)
   },
-}
+})

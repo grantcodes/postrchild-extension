@@ -5,9 +5,10 @@ import videoExtensions from 'video-extensions'
 import Button from '../../../../util/Button'
 import { Movie as VideoIcon } from 'styled-icons/material'
 import Overlay from '../../Toolbar/Overlay'
-import AlignmentButtons from '../../Toolbar/AlignmentButtons'
 import { updateElement, requestFiles, isUrl } from '../../helpers'
 import useMicropubUpload from '../../hooks/useMicropubUpload'
+import Wrapper from '../Wrapper'
+import withAlignment from '../with-alignment'
 
 const isVideoUrl = (url) => {
   if (!url) return false
@@ -28,7 +29,7 @@ const insertVideo = (editor, properties) => {
   Transforms.insertNodes(editor, video)
 }
 
-const Video = ({ attributes, children, element }) => {
+const Video = ({ attributes, children, element, AlignmentButtons }) => {
   const editor = useEditor()
   const selected = useSelected()
   const { uploading, url: fileUrl } = useMicropubUpload(element.file)
@@ -49,7 +50,7 @@ const Video = ({ attributes, children, element }) => {
   }, [editor, element, posterUrl])
 
   return (
-    <div {...attributes} style={{ position: 'relative' }}>
+    <Wrapper attributes={attributes} element={element}>
       <video
         {...attributes}
         src={element.src}
@@ -60,12 +61,7 @@ const Video = ({ attributes, children, element }) => {
       />
       {selected && (
         <Overlay>
-          <AlignmentButtons
-            alignment={(element.class || 'none').replace('align', '')}
-            onChange={(alignment) =>
-              updateElement(editor, element, { class: 'align' + alignment })
-            }
-          />
+          <AlignmentButtons />
           {!element.poster ? (
             <Button
               onClick={(e) => {
@@ -98,11 +94,11 @@ const Video = ({ attributes, children, element }) => {
         </Overlay>
       )}
       {children}
-    </div>
+    </Wrapper>
   )
 }
 
-export default {
+export default withAlignment({
   name: 'video',
   keywords: ['video', 'film', 'movie'],
   icon: <VideoIcon />,
@@ -128,7 +124,7 @@ export default {
         const videoBlock = {
           file,
           poster: '',
-          class: 'alignnone',
+          class: '',
           src: URL.createObjectURL(file),
           controls: true,
         }
@@ -176,4 +172,4 @@ export default {
 
     return editor
   },
-}
+})

@@ -5,8 +5,10 @@ import imageExtensions from 'image-extensions'
 import Button from '../../../../util/Button'
 import { PhotoSizeSelectActual as ImageIcon } from 'styled-icons/material'
 import Overlay from '../../Toolbar/Overlay'
-import AlignmentButtons from '../../Toolbar/AlignmentButtons'
+// import AlignmentButtons from '../../Toolbar/AlignmentButtons'
 import { isUrl, updateElement, requestFiles } from '../../helpers'
+import withAlignment from '../with-alignment'
+import Wrapper from '../Wrapper'
 import useMicropubUpload from '../../hooks/useMicropubUpload'
 
 const insertImage = (editor, properties) => {
@@ -69,26 +71,9 @@ const withImages = (editor) => {
   return editor
 }
 
-// const InsertImageButton = () => {
-//   const editor = useEditor()
-//   return (
-//     <Button
-//       onMouseDown={event => {
-//         event.preventDefault()
-//         const url = window.prompt('Enter the URL of the image:')
-//         if (!url) return
-//         insertImage(editor, url)
-//       }}
-//     >
-//       <Icon>image</Icon>
-//     </Button>
-//   )
-// }
-
-const Image = ({ attributes, children, element }) => {
+const Image = ({ attributes, children, element, AlignmentButtons }) => {
   const editor = useEditor()
   const selected = useSelected()
-  // const focused = useFocused()
   const { uploading, url: fileUrl } = useMicropubUpload(element.file)
 
   useEffect(() => {
@@ -98,44 +83,33 @@ const Image = ({ attributes, children, element }) => {
   }, [editor, element, fileUrl])
 
   return (
-    <div
-      {...attributes}
-      style={{ position: 'relative', userSelect: 'none' }}
-      className={element.class}
-    >
-      <div contentEditable={false}>
-        <img
-          src={element.src}
-          alt={element.alt}
-          className={element.class}
-          style={{ opacity: uploading ? 0.5 : 1 }}
-        />
-        {selected && (
-          <Overlay>
-            <AlignmentButtons
-              // alignment={(data.className || 'none').replace('align', '')}
-              onChange={(alignment) => {
-                updateElement(editor, element, { class: 'align' + alignment })
-              }}
-            />
-            <Button
-              onClick={(e) => {
-                e.preventDefault()
-                const alt = window.prompt('Enter alt text', element.alt)
-                updateElement(editor, element, { alt: alt ? alt : '' })
-              }}
-            >
-              Alt
-            </Button>
-          </Overlay>
-        )}
-      </div>
+    <Wrapper attributes={attributes} element={element}>
+      <img
+        src={element.src}
+        alt={element.alt}
+        className={element.class}
+        style={{ opacity: uploading ? 0.5 : 1 }}
+      />
+      {selected && (
+        <Overlay>
+          <AlignmentButtons />
+          <Button
+            onClick={(e) => {
+              e.preventDefault()
+              const alt = window.prompt('Enter alt text', element.alt)
+              updateElement(editor, element, { alt: alt ? alt : '' })
+            }}
+          >
+            Alt
+          </Button>
+        </Overlay>
+      )}
       {children}
-    </div>
+    </Wrapper>
   )
 }
 
-export default {
+export default withAlignment({
   name: 'image',
   keywords: ['image', 'photo', 'img'],
   icon: <ImageIcon />,
@@ -158,11 +132,11 @@ export default {
         insertImage(editor, {
           file,
           alt: '',
-          class: 'alignnone',
+          class: '',
           src: URL.createObjectURL(file),
         })
       },
     })
   },
   hoc: withImages,
-}
+})

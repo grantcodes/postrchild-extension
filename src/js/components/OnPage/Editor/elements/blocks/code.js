@@ -2,11 +2,11 @@ import React from 'react'
 import { Editor, Transforms, Range } from 'slate'
 import { useEditor, useSelected } from 'slate-react'
 import Overlay from '../../Toolbar/Overlay'
-import AlignmentButtons from '../../Toolbar/AlignmentButtons'
 import Button from '../../../../util/Button'
 import { updateElement } from '../../helpers'
 import { Code as CodeIcon } from 'styled-icons/material'
 import { escape as htmlEntities } from 'he'
+import withAlignment from '../with-alignment'
 
 const withCodeBlock = (editor) => {
   const { insertBreak } = editor
@@ -44,7 +44,7 @@ const withCodeBlock = (editor) => {
   return editor
 }
 
-const Code = ({ attributes, element, children }) => {
+const Code = ({ attributes, element, children, AlignmentButtons }) => {
   const editor = useEditor()
   const selected = useSelected()
 
@@ -54,12 +54,7 @@ const Code = ({ attributes, element, children }) => {
         {children}
         {selected && (
           <Overlay>
-            <AlignmentButtons
-              alignment={(element.class || 'none').replace('align', '')}
-              onChange={(alignment) =>
-                updateElement(editor, element, { class: 'align' + alignment })
-              }
-            />
+            <AlignmentButtons />
             <Button
               onClick={(e) => {
                 e.preventDefault()
@@ -81,7 +76,7 @@ const Code = ({ attributes, element, children }) => {
   )
 }
 
-export default {
+export default withAlignment({
   name: 'code-block',
   keywords: ['code', 'pre', 'syntax'],
   icon: <CodeIcon />,
@@ -105,7 +100,7 @@ export default {
   onButtonClick: (editor) => {
     const codeBlock = {
       type: 'code-block',
-      class: 'alignnone',
+      class: '',
       language: '',
       children: [{ text: '', placeholder: 'Code block' }],
     }
@@ -113,4 +108,4 @@ export default {
     Transforms.insertNodes(editor, codeBlock)
   },
   hoc: withCodeBlock,
-}
+})
